@@ -16,6 +16,10 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import FormFinished from "../components/FormFinished"
 
+interface Dungeons {
+  name: string
+}
+
 const roles = [
   { value: "OffTank", label: "OffTank", icon: "/rolesIcons/offtank.webp" },
   { value: "Arcano Silence", label: "Arcano Silence", icon: "/rolesIcons/arcanosilence.webp" },
@@ -32,7 +36,7 @@ const roles = [
 
 export default function Event() {
   const { eventId } = useParams()
-  const [dungeons, setDungeons] = useState([])
+  const [dungeons, setDungeons] = useState<Dungeons[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -54,8 +58,9 @@ export default function Event() {
         }
         const data = await response.json()
         setDungeons(data)
-      } catch (err) {
-        setError(err.message)
+      } catch (err: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setError(err instanceof Error ? err.message : 'Erro desconhecido' as any)
       } finally {
         setIsLoading(false)
       }
@@ -87,7 +92,7 @@ export default function Event() {
         <div className="px-4 py-6 sm:px-0  max-w-3xl">
           <div className="shadow overflow-hidden sm:rounded-lg">
             <div className="flex flex-col items-center justify-center gap-4 px-4 py-5 sm:p-6">
-              <h1>{dungeons.name}</h1>
+              <h1>{dungeons[0].name}</h1>
               <h2 className="text-lg leading-6 font-medium mb-4">Disputa IP</h2>
             </div>
           </div>

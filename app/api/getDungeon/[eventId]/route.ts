@@ -1,20 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/services/prisma";
 
+interface RouteParams {
+  eventId: string
+}
+
 export async function GET(
-  request: Request,
-  { params }: { params: { eventId: string } }
+  request: NextRequest,
+  { params }: { params: RouteParams }
 ) {
   try {
-    const eventId = params.eventId
-    const getDungeons = await prisma.dungeons.findMany({  
+    const eventId = parseInt(params.eventId)
+    
+    const getDungeons = await prisma.dungeons.findMany({
       where: {
-        eventId: eventId
+        eventId: eventId.toString()
       }
     })
+    
     return NextResponse.json(getDungeons)
   } catch (error) {
-    console.error("Erro ao buscar dungeons:", error);
-    return NextResponse.json({ error: "Erro ao buscar dungeons" }, { status: 500 });
+    return NextResponse.json({ error: `Erro ao buscar dungeons: ${error}` }, { status: 500 })
   }
 }
