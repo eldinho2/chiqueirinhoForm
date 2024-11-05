@@ -21,3 +21,13 @@ model Users {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Dungeons {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId     String
+  name        String?
+  creatorName String
+  date        DateTime
+  detalhes    Json?
+}
+

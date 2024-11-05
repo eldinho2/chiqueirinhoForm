@@ -13,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, password, role } = await request.json();
-  const createUser = await prisma.users.create({ data: { name, password, role } });
+  const { username, password, role } = await request.json();
+  const createUser = await prisma.users.create({ data: { username, password, role } });
   return NextResponse.json(createUser);
 }

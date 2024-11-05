@@ -22,9 +22,6 @@ export default function Header() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(true);
 
-
-  console.log(session);
-
   const handleLogout = async () => {
     await signOut();
   };
