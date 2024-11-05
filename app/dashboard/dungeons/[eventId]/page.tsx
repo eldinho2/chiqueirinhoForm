@@ -1,7 +1,8 @@
 'use client'
 
 import Header from "@/app/components/Header"
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
+import { useParams } from 'next/navigation'
 
 interface Role {
     MainTank: string;
@@ -12,10 +13,12 @@ interface DungeonsDetails {
     name: string;
 }
 
-export default function Dungeons({ params }: { params: { eventId: string } }) {
-    // @ts-expect-error - Parâmetros do Next.js ainda não estão totalmente tipados
-    const resolvedParams = use(params) as { eventId: string }
-    const eventId = resolvedParams.eventId
+export default function Dungeons() {
+    const params = useParams()
+
+    const eventId = params.eventId
+
+    console.log(params.eventId)
 
     const [dungeonsDetails, setDungeonsDetails] = useState<DungeonsDetails[]>([])
     const [roles, setRoles] = useState<Role[]>([])  
@@ -25,6 +28,7 @@ export default function Dungeons({ params }: { params: { eventId: string } }) {
             const response = await fetch(`/api/getDungeon/${eventId}`)
             const data = await response.json()
             setDungeonsDetails(data)
+            console.log(data)
             if (data[0]?.detalhes && Array.isArray(data[0].detalhes)) {
                 setRoles(data[0].detalhes as Role[])
             } else {
