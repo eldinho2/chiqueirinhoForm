@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/services/prisma";
 
-interface Dungeons {
-  eventId: string;
-}
-
 export async function GET(
-  req: Request,
-  { params }: { params: Dungeons }
+  request: Request,
+  { params }: { params: { eventId: string } }
 ) {
   try {
     const eventId = params.eventId
