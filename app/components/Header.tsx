@@ -40,6 +40,8 @@ export default function Header() {
     return <Skeleton className="bg-gray-500 h-4 w-28 rounded-full" />;
   };
 
+  if (!isLoggedIn) return null;
+
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">

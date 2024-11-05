@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Header from '../components/Header';
 import { useEffect, useState } from "react"
-import { Trash2 } from 'lucide-react';
+import { Trash2, Clipboard, CheckCheck } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
+import ErrorPage from "@/utils/ErrorPage";
+import Loading from "@/utils/Loading";
 
 export default function Dashboard() {
   interface Dungeon {
@@ -20,12 +22,15 @@ export default function Dashboard() {
 
   const [dungeons, setDungeons] = useState<Dungeon[]>([])
   const { toast } = useToast()
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchDungeons = async () => {
       const response = await fetch('/api/getDungeons')
       const data = await response.json()
       setDungeons(data)
+      setIsLoading(false)
     }
     fetchDungeons()
   }, [])  
@@ -57,6 +62,17 @@ export default function Dashboard() {
     }
   } 
 
+  const handleCopy = async (eventId: string) => {
+    const url = `https://chiqueirinho-form.vercel.app/${eventId}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(eventId);
+    toast({
+      title: "Link copiado!",
+      description: "O link foi copiado para sua área de transferência.",
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+  
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl bg-black text-white">
       <Toaster />
@@ -72,6 +88,7 @@ export default function Dashboard() {
           <Link href="/dashboard/create">Criar Nova Dungeon</Link>
         </Button>
       </div>
+      {isLoading && <Loading />}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {dungeons.map((dungeon) => (
           <Card 
@@ -93,8 +110,17 @@ export default function Dashboard() {
               <CardDescription className="text-sm text-gray-400">
                 {new Date(dungeon.date).toLocaleDateString()}
               </CardDescription>
-              <CardDescription className="text-sm font-mono bg-zinc-800 p-2 rounded text-gray-300">
-                {dungeon.eventId}
+              <CardDescription className="text-sm font-mono bg-zinc-800 p-2 rounded text-gray-300 flex items-center gap-2">
+                <span 
+                  className="cursor-pointer hover:text-purple-500 transition-colors"
+                  onClick={() => handleCopy(dungeon.eventId)}
+                >
+                  {copiedId === dungeon.eventId ? 
+                    <CheckCheck className="h-4 w-4 text-green-500" /> : 
+                    <Clipboard className="h-4 w-4" />
+                  }
+                </span>
+                <span className="text-gray-400">https://chiqueirinho-form.vercel.app/{dungeon.eventId}</span>
               </CardDescription>
             </CardHeader>
             <CardContent>

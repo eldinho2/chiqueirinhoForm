@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import FormFinished from "../components/FormFinished"
+import { motion } from "framer-motion"
+import Loading from "@/utils/Loading"
+import ErrorPage from "@/utils/ErrorPage"
+import Header from "../components/Header"
 
 interface Dungeons {
   name: string
@@ -33,6 +37,24 @@ const roles = [
   { value: "Incubus", label: "Incubus", icon: "/rolesIcons/incubus.webp" },
   { value: "Oculto", label: "Oculto", icon: "/rolesIcons/oculto.png" },
 ]
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1
+  }
+}
 
 export default function Event() {
   const { eventId } = useParams()
@@ -82,111 +104,138 @@ export default function Event() {
     setHasUserFinished(true)
   }
 
-  if (isLoading) return <div className="text-center p-4">Loading...</div>
+  if (isLoading) return <div className="min-h-screen flex flex-col items-center justify-center"><Loading /></div>
   if (error) return <div className="text-center text-red-500 p-4">Error: {error}</div>
   if (hasUserFinished) return <FormFinished />
-
+  if (!dungeons.length) return <ErrorPage />
+  
   return (
-      <main className="min-h-screen flex flex-col items-center justify-center py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen flex flex-col items-center justify-center py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center justify-center mb-4">
+        <Header />
+      </div>
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <Image className="rounded-full" src="/chiqueirinhologo.webp" alt="Logo" width={100} height={100} />
-        <div className="px-4 py-6 sm:px-0  max-w-3xl">
-          <div className="shadow overflow-hidden sm:rounded-lg">
-            <div className="flex flex-col items-center justify-center gap-4 px-4 py-5 sm:p-6">
-              <h1>{dungeons[0].name}</h1>
-              <h2 className="text-lg leading-6 font-medium mb-4">Disputa IP</h2>
-            </div>
+      </motion.div>
+
+      <div className="px-4 py-6 sm:px-0 max-w-3xl">
+        <motion.div 
+          className="shadow overflow-hidden sm:rounded-lg"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex flex-col items-center justify-center gap-4 px-4 py-5 sm:p-6">
+            <h1>{dungeons[0]?.name || "Desconhecido"}</h1>
+            <h2 className="text-lg leading-6 font-medium mb-4">Disputa IP</h2>
           </div>
+        </motion.div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="nick">Nick</Label>
-              <Input 
-                id="nick" 
-                placeholder="Seu nick no jogo" 
-                value={nick}
-                onChange={(e) => setNick(e.target.value)}
-                required
-              />
-            </div>
+        <motion.form 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          onSubmit={handleSubmit} 
+          className="flex flex-col gap-8 w-[300px]"
+        >
+          <motion.div variants={itemVariants} className="flex flex-col gap-2">
+            <Label htmlFor="nick">Nick</Label>
+            <Input 
+              id="nick" 
+              placeholder="Seu nick no jogo" 
+              value={nick}
+              onChange={(e) => setNick(e.target.value)}
+              required
+            />
+          </motion.div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="role">Qual a role que você quer disputar?</Label>
-              <Select required onValueChange={(value) => setSelectedRole(value)}>
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Selecione sua role" />
-                </SelectTrigger>
-                <SelectContent className="w-full max-h-[300px] overflow-y-auto bg-black text-white">
-                  {roles.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{role.label}</span>
-                        <Image
-                          src={role.icon}
-                          alt={role.label}
-                          width={26}
-                          height={26}
-                          className="ml-2"
-                        />
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <Label>Você possui MOR nesta role?</Label>
-              <RadioGroup defaultValue="no" onValueChange={(value) => setHasMor(value === "yes")}>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="yes" id="morYes" />
-                  <Label htmlFor="morYes">Sim</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="no" id="morNo" />
-                  <Label htmlFor="morNo">Não</Label>
-                </div>
-              </RadioGroup>
-
-              {hasMor && (
-                <div className="flex flex-col gap-4">
-                  <Label>MOR, está usando equipamentos 8.3 Excelente?</Label>
-                  <RadioGroup defaultValue="no" onValueChange={setHasEquip}>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="yes" id="equipYes" />
-                      <Label htmlFor="equipYes">Sim</Label>
+          <motion.div variants={itemVariants} className="flex flex-col gap-2">
+            <Label htmlFor="role">Qual a role que você quer disputar?</Label>
+            <Select required onValueChange={(value) => setSelectedRole(value)}>
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Selecione sua role" />
+              </SelectTrigger>
+              <SelectContent className="w-full h-[300px] overflow-y-auto bg-black text-white">
+                {roles.map((role) => (
+                  <SelectItem key={role.value} value={role.value}>
+                    <div className="flex items-center justify-between w-full">
+                      <span>{role.label}</span>
+                      <Image
+                        src={role.icon}
+                        alt={role.label}
+                        width={26}
+                        height={26}
+                        className="ml-2"
+                      />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="no" id="equipNo" />
-                      <Label htmlFor="equipNo">Não</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              )}
-            </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </motion.div>
 
+          <motion.div variants={itemVariants} className="flex flex-col gap-4">
+            <Label>Você possui MOR nesta role?</Label>
+            <RadioGroup defaultValue="no" onValueChange={(value) => setHasMor(value === "yes")}>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="yes" id="morYes" />
+                <Label htmlFor="morYes">Sim</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="no" id="morNo" />
+                <Label htmlFor="morNo">Não</Label>
+              </div>
+            </RadioGroup>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="ip">IP</Label>
-              <Input 
-                id="ip" 
-                placeholder="Seu IP na arma de disputa" 
-                value={ip}
-                onChange={(e) => setIp(e.target.value)}
-                required
-              />
-            </div>
+            {hasMor && (
+              <div className="flex flex-col gap-4">
+                <Label>MOR, está usando equipamentos 8.3 Excelente?</Label>
+                <RadioGroup defaultValue="no" onValueChange={setHasEquip}>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="yes" id="equipYes" />
+                    <Label htmlFor="equipYes">Sim</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="no" id="equipNo" />
+                    <Label htmlFor="equipNo">Não</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+          </motion.div>
 
-            {!isSubmitting && (
+          <motion.div variants={itemVariants} className="flex flex-col gap-2">
+            <Label htmlFor="ip">IP</Label>
+            <Input 
+              id="ip" 
+              placeholder="Seu IP na arma de disputa" 
+              value={ip}
+              onChange={(e) => setIp(e.target.value)}
+              required
+            />
+          </motion.div>
+
+          {!isSubmitting && (
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <Button
                 disabled={isSubmitting}
-              className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
-              type="submit"
+                className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
+                type="submit"
               >
                 Enviar
               </Button>
-            )}
-          </form>
-        </div>
-      </main>
+            </motion.div>
+          )}
+        </motion.form>
+      </div>
+    </main>
   )
 }
