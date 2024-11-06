@@ -5,7 +5,6 @@ export async function POST(request: Request) {
   try {
     const { name, creatorName, roles, eventId } = await request.json();
 
-    console.log(roles)
     
     const currentDate = new Date().toISOString();
     

@@ -34,7 +34,6 @@ export default function Dashboard() {
     fetchDungeons()
   }, [])  
 
-  console.log(dungeons)
 
   const handleDelete = async (id: string) => {
     const response = await fetch(`/api/auth/deleteDungeon`, {

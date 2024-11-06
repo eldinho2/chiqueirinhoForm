@@ -4,7 +4,6 @@ import prisma from "@/services/prisma";
 export async function GET() {
   try {
     const getDungeons = await prisma.dungeons.findMany();
-    console.log(getDungeons)
     return NextResponse.json(getDungeons);
   } catch (error) {
     console.error("Erro ao buscar dungeons:", error);

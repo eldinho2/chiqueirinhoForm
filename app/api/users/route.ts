@@ -4,7 +4,6 @@ import prisma from "@/services/prisma";
 export async function GET() {
   try {
     const getUsers = await prisma.users.findMany();
-    console.log(getUsers);
     return NextResponse.json(getUsers);
   } catch (error) {
     console.error("Erro ao buscar usuários:", error);

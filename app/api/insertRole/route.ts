@@ -4,7 +4,6 @@ import prisma from "@/services/prisma";
 export async function POST(request: Request) {
     const body = await request.json()
     const { eventId, roleData } = body
-    console.log(roleData)
 
     const dungeon = await prisma.dungeons.findUnique({
         where: { eventId: eventId }

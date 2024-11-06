@@ -4,22 +4,16 @@ import { authConfig } from './auth.config';
 import prisma from './services/prisma';
  
 async function getUser(username: string, password: string): Promise<User | null> {
-  try {
-    console.log('Buscando usuário:', username);
-    
+  try {    
     const user = await prisma.users.findUnique({
       where: { username },
     });
 
-    console.log('Usuário encontrado:', user ? 'Sim' : 'Não');
-
     if (!user) {
-      console.log('Usuário não encontrado');
       return null;
     }
 
     if (user.password !== password) {
-      console.log('Senha incorreta');
       return null;
     }
 
@@ -28,7 +22,6 @@ async function getUser(username: string, password: string): Promise<User | null>
       name: user.username,
     };
 
-    console.log('Retornando usuário:', userObject);
     return userObject;
 
   } catch (error) {
@@ -46,17 +39,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        try {
-          console.log('Iniciando autorização');
-          
+        try {          
           if (!credentials?.username || !credentials?.password) {
-            console.log('Credenciais faltando');
             return null;
           }
 
           const user = await getUser(credentials.username as string, credentials.password as string);
           
-          console.log('Resultado da autorização:', user ? 'Sucesso' : 'Falha');
           
           return user;
         } catch (error) {

@@ -27,7 +27,6 @@ export default function CreateDungeonPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log(JSON.stringify({ name, creatorName, roles, eventId }))
 
     try {
       await fetch('/api/createDungeon', {
