@@ -20,6 +20,7 @@ import Loading from "@/utils/Loading"
 import ErrorPage from "@/utils/ErrorPage"
 import Header from "../components/Header"
 import { roles } from "@/lib/roles"
+import { mutate } from 'swr'
 
 interface Dungeons {
   name: string
@@ -91,15 +92,25 @@ export default function Event() {
     }
 
     try {
-      await fetch("/api/insertRole", {
+      const response = await fetch("/api/insertRole", {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ eventId, roleData })
       })
+      
+      if (!response.ok) {
+        throw new Error('Falha ao enviar dados')
+      }
+      
+      mutate(`/api/getDungeon/${eventId}`)
+      
       setHasUserFinished(true)
     } catch (error) {
-      console.log('Erro:', error);
+      console.error('Erro:', error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 

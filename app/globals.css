@@ -7,6 +7,14 @@ body {
   color: #fff;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #acacac;
+}
+
+
 .loader {
   width: fit-content;
   font-weight: bold;
