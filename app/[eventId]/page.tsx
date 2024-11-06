@@ -226,6 +226,8 @@ export default function Event() {
               placeholder="Seu IP na arma de disputa" 
               value={ip}
               onChange={(e) => setIp(e.target.value)}
+              max="2500"
+              min="0"
               required
             />
           </motion.div>
