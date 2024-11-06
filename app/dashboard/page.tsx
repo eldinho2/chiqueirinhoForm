@@ -8,7 +8,6 @@ import { useEffect, useState } from "react"
 import { Trash2, Clipboard, CheckCheck } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
-import ErrorPage from "@/utils/ErrorPage";
 import Loading from "@/utils/Loading";
 
 export default function Dashboard() {
@@ -74,7 +73,7 @@ export default function Dashboard() {
   };
   
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl bg-black text-white">
+    <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
       <Toaster />
       <Header />
       <div className="flex justify-between items-center mb-12">

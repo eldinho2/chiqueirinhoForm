@@ -15,13 +15,19 @@ export default function CreateDungeonPage() {
   const creatorName = session?.user?.name || ""
 
   const [name, setName] = useState("")
-  const [detalhes] = useState({"MainTank": creatorName})
+
+  const roles = [
+    {"MainTank": {
+      "nick": creatorName
+    }}
+  ]
+
   const [eventId] = useState(uuidv4())
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log(JSON.stringify({ name, creatorName, detalhes, eventId }))
+    console.log(JSON.stringify({ name, creatorName, roles, eventId }))
 
     try {
       await fetch('/api/createDungeon', {
@@ -29,7 +35,7 @@ export default function CreateDungeonPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, creatorName, detalhes, eventId })
+        body: JSON.stringify({ name, creatorName, roles, eventId })
       })
       router.push("/dashboard")
     } catch (error) {
@@ -49,6 +55,7 @@ export default function CreateDungeonPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            autoFocus
           />
         </div>
         <Button type="submit" className="w-full">Create Dungeon</Button>

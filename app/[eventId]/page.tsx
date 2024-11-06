@@ -19,24 +19,11 @@ import { motion } from "framer-motion"
 import Loading from "@/utils/Loading"
 import ErrorPage from "@/utils/ErrorPage"
 import Header from "../components/Header"
+import { roles } from "@/lib/roles"
 
 interface Dungeons {
   name: string
 }
-
-const roles = [
-  { value: "OffTank", label: "OffTank", icon: "/rolesIcons/offtank.webp" },
-  { value: "Arcano Silence", label: "Arcano Silence", icon: "/rolesIcons/arcanosilence.webp" },
-  { value: "Arcano Elevado", label: "Arcano Elevado", icon: "/rolesIcons/arcanoelevado.webp" },
-  { value: "Main Healer", label: "Main Healer", icon: "/rolesIcons/mainhealer.webp" },
-  { value: "Bruxo", label: "Bruxo", icon: "/rolesIcons/bruxo.webp" },
-  { value: "Raiz Férrea", label: "Raiz Férrea", icon: "/rolesIcons/raiz.webp" },
-  { value: "Raiz Férrea - DPS", label: "Raiz Férrea - DPS", icon: "/rolesIcons/raizDps.webp" },
-  { value: "X-Bow", label: "X-Bow", icon: "/rolesIcons/xbow.webp" },
-  { value: "Quebra Reinos", label: "Quebra Reinos", icon: "/rolesIcons/quebrareinos.webp" },
-  { value: "Incubus", label: "Incubus", icon: "/rolesIcons/incubus.webp" },
-  { value: "Oculto", label: "Oculto", icon: "/rolesIcons/oculto.png" },
-]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -90,18 +77,30 @@ export default function Event() {
     fetchDungeons()
   }, [eventId])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    console.log({
-      nick,
-      ip,
-      role: selectedRole,
-      hasMor: hasMor,
-      equipamentos83: hasMor ? hasEquip : "N/A"
-    })
-    setIsSubmitting(false)
-    setHasUserFinished(true)
+
+    const roleData = {
+      [selectedRole]: {
+        nick: nick,
+        ip: ip,
+        hasMor: hasMor,
+        hasEquip: hasMor ? hasEquip : "N/A"
+      }
+    }
+
+    try {
+      await fetch("/api/insertRole", {
+        method: "POST",
+        body: JSON.stringify({ eventId, roleData })
+      })
+      setHasUserFinished(true)
+    } catch (error) {
+      console.log('Erro:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isLoading) return <div className="min-h-screen flex flex-col items-center justify-center"><Loading /></div>
@@ -211,6 +210,7 @@ export default function Event() {
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
             <Label htmlFor="ip">IP</Label>
             <Input 
+              type="number"
               id="ip" 
               placeholder="Seu IP na arma de disputa" 
               value={ip}

@@ -3,7 +3,9 @@ import prisma from "@/services/prisma";
 
 export async function POST(request: Request) {
   try {
-    const { name, creatorName, detalhes, eventId } = await request.json();
+    const { name, creatorName, roles, eventId } = await request.json();
+
+    console.log(roles)
     
     const currentDate = new Date().toISOString();
     
@@ -13,7 +15,7 @@ export async function POST(request: Request) {
         name, 
         creatorName, 
         date: currentDate,
-        detalhes 
+        roles
       } 
     });
     return NextResponse.json(dungeon);

@@ -24,10 +24,10 @@ model Users {
 
 model Dungeons {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  eventId     String
+  eventId     String   @unique
   name        String?
   creatorName String
   date        DateTime
-  detalhes    Json?
+  roles       Json[]
 }
 
