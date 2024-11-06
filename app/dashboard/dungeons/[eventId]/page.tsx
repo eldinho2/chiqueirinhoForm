@@ -160,7 +160,7 @@ export default function Dungeons() {
       <Header />
       <main className="container mx-auto">
         <div className="flex justify-center items-center gap-4">
-          <h1 className="text-2xl font-bold mb-8 text-center">
+          <h1 className="text-2xl font-bold mb-8 text-center overflow-hidden">
             {dungeonsDetails[0]?.name || "Loading..."}
           </h1>
           <span className="text-gray-400 text-sm mb-4">

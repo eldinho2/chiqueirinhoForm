@@ -12,6 +12,7 @@ import Loading from "@/utils/Loading";
 
 export default function Dashboard() {
   interface Dungeon {
+    creatorName: string
     id: string
     eventId: string
     name: string
@@ -71,13 +72,15 @@ export default function Dashboard() {
     setTimeout(() => setCopiedId(null), 2000);
   };
   
+  console.log(dungeons) 
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
       <Toaster />
       <Header />
       <div className="flex justify-between items-center mb-12">
         <h1 className="text-5xl py-2 font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
-          Suas Dungeons
+          Dungeons
         </h1>
         <Button 
           asChild 
@@ -95,7 +98,7 @@ export default function Dashboard() {
           >
             <CardHeader className="space-y-3">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-2xl font-bold text-white">
+                <CardTitle className="text-2xl font-bold text-white overflow-hidden">
                   {dungeon.name}
                 </CardTitle>
                 <CardTitle 
@@ -105,6 +108,9 @@ export default function Dashboard() {
                   <Trash2 className="h-5 w-5" />
                 </CardTitle>
               </div>
+              <CardDescription className="text-sm text-gray-400">
+                {dungeon.creatorName}
+              </CardDescription>
               <CardDescription className="text-sm text-gray-400">
                 {new Date(dungeon.date).toLocaleDateString()}
               </CardDescription>
