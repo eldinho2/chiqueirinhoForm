@@ -173,8 +173,8 @@ export default function Dungeons() {
           </div>
           <div className="flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-4">Lista de M.O.R</h1>
-            <div className="gap-4 w-80 bg-[#232323] p-4 rounded-lg shadow-lg">
-              <div className="flex flex-col gap-2 max-h-[600px] max-w-[300px] overflow-y-auto">
+            <div className="gap-4 bg-[#232323] p-4 rounded-lg shadow-lg">
+              <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto">
                 {morList.map((mor, index) => (
                   
                   <div
