@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server"
 import prisma from "@/services/prisma";
+import { Prisma } from '@prisma/client';
+
+interface MorPlayer {
+    nick: string;
+    role: string;
+    ip: string;
+}
 
 export async function POST(request: Request) {
     const body = await request.json();
@@ -16,7 +23,7 @@ export async function POST(request: Request) {
     console.log('Player a ser removido:', playerData);
     console.log('Lista atual:', dungeon.morList);
 
-    const updatedMorList = dungeon.morList.filter((player: any) => 
+    const updatedMorList = (dungeon.morList as unknown as MorPlayer[]).filter((player: MorPlayer) => 
         !(player.nick === playerData.nick && 
           player.role === playerData.role && 
           player.ip === playerData.ip)
@@ -27,7 +34,7 @@ export async function POST(request: Request) {
     const updatedDungeon = await prisma.dungeons.update({
         where: { eventId: eventId },
         data: {
-            morList: updatedMorList as any[]
+            morList: updatedMorList as unknown as Prisma.InputJsonValue[]
         }
     });
 
