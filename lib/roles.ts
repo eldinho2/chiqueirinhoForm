@@ -1,4 +1,5 @@
 export const roles = [
+    { value: "MainTank", label: "MainTank", icon: "/rolesIcons/maintank.webp" },
     { value: "OffTank", label: "OffTank", icon: "/rolesIcons/offtank.webp" },
     { value: "Arcano Silence", label: "Arcano Silence", icon: "/rolesIcons/arcanosilence.webp" },
     { value: "Arcano Elevado", label: "Arcano Elevado", icon: "/rolesIcons/arcanoelevado.webp" },
@@ -10,4 +11,7 @@ export const roles = [
     { value: "Raiz Férrea", label: "Raiz Férrea", icon: "/rolesIcons/raiz.webp" },
     { value: "Raiz Férrea - DPS", label: "Raiz Férrea - DPS", icon: "/rolesIcons/raizDps.webp" },
     { value: "X-Bow", label: "X-Bow", icon: "/rolesIcons/xbow.webp" },
+    { value: "Águia", label: "Águia", icon: "/rolesIcons/aguia.webp" },
+    { value: "Frost", label: "Frost", icon: "/rolesIcons/frost.webp" },
+    { value: "Scout", label: "Scout", icon: "/rolesIcons/scout.webp" },
   ]

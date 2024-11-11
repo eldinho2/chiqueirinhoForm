@@ -37,7 +37,7 @@ export default function Dashboard() {
 
 
   const handleDelete = async (id: string) => {
-    const response = await fetch(`/api/auth/deleteDungeon`, {
+    const response = await fetch(`/api/deleteDungeon`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export default function Dashboard() {
                 {dungeon.creatorName}
               </CardDescription>
               <CardDescription className="text-sm text-gray-400">
-                {new Date(dungeon.date).toLocaleDateString()}
+                {new Date(dungeon.date).toLocaleDateString('pt-BR') + " às " + new Date(dungeon.date).toLocaleTimeString('pt-BR')}
               </CardDescription>
               <CardDescription className="text-sm font-mono bg-zinc-800 p-2 rounded text-gray-300 flex items-center gap-2">
                 <span 

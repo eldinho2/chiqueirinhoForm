@@ -14,6 +14,7 @@ export async function POST(request: Request) {
         name, 
         creatorName, 
         date: currentDate,
+        morList: [],
         roles
       } 
     });

@@ -28,6 +28,7 @@ model Dungeons {
   name        String?
   creatorName String
   date        DateTime
+  morList     Json[]
   roles       Json[]
 }
 

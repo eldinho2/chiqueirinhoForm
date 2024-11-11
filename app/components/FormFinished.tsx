@@ -94,8 +94,8 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Desktop:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="https://cdn.discordapp.com/attachments/558377239956160522/1303853992995983401/image.png?ex=672d4428&is=672bf2a8&hm=df5ccfd986df85b83b635ae9ab0dfa5f3fc1f5cfeb1b33da3f9874672a28fed9&" 
-                alt="Discord" 
+                src="https://cdn.discordapp.com/attachments/616035988518600704/1305637545127710740/image.png?ex=6733c138&is=67326fb8&hm=60d2948afba52034edb0c63e6446dd500dcd76625016079ecb6d00689ba659e2&" 
+                alt="Desktop" 
                 width={340} 
                 height={340} 
               />
@@ -104,7 +104,7 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Mobile:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="https://cdn.discordapp.com/attachments/616035988518600704/1303856119105458236/Sem_titulo.png?ex=672d4623&is=672bf4a3&hm=119d7b60b0090a8d7210f579b50b2c313159f7c4d96e3c41a8a90ba5ee33540e&" 
+                src="https://cdn.discordapp.com/attachments/616035988518600704/1303856119105458236/Sem_titulo.png?ex=673334e3&is=6731e363&hm=bd8870328a4b3cc4746e3b781ca702d7629e906f416620d4461bbbf225b7d0c3&" 
                 alt="Mobile" 
                 width={340} 
                 height={340} 
