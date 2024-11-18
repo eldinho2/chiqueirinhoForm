@@ -29,7 +29,10 @@ export default function Dashboard() {
     const fetchDungeons = async () => {
       const response = await fetch('/api/getDungeons')
       const data = await response.json()
-      setDungeons(data)
+      const sortedDungeons = data.sort((a: Dungeon, b: Dungeon) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+      setDungeons(sortedDungeons)
       setIsLoading(false)
     }
     fetchDungeons()

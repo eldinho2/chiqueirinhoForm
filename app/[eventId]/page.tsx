@@ -249,6 +249,23 @@ export default function Event() {
           )}
         </motion.form>
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="mt-8 text-center text-sm text-gray-500"
+      >
+        <footer className="flex flex-col items-center gap-2">
+          <p>Desenvolvido com ❤️ por luana2</p>
+          <div className="flex items-center gap-2 text-xs mt-1">
+            <span>Versão 1.0.0</span>
+            <span>•</span>
+            <span>Última atualização: {new Date().toLocaleDateString('pt-BR')}</span>
+          </div>
+          <p className="mt-2">© {new Date().getFullYear()} Chiqueirinho - Todos os direitos reservados</p>
+        </footer>
+      </motion.div>
     </main>
   )
 }
