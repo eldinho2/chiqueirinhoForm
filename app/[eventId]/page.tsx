@@ -259,9 +259,9 @@ export default function Event() {
         <footer className="flex flex-col items-center gap-2">
           <p>Desenvolvido com ❤️ por luana2</p>
           <div className="flex items-center gap-2 text-xs mt-1">
-            <span>Versão 1.0.0</span>
             <span>•</span>
-            <span>Última atualização: {new Date().toLocaleDateString('pt-BR')}</span>
+              <span>Versão 1.0.0</span>
+            <span>•</span>
           </div>
           <p className="mt-2">© {new Date().getFullYear()} Chiqueirinho - Todos os direitos reservados</p>
         </footer>
