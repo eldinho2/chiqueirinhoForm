@@ -9,6 +9,7 @@ import { Trash2, Clipboard, CheckCheck } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
 import Loading from "@/utils/Loading";
+import { useSession } from "next-auth/react"
 
 export default function Dashboard() {
   interface Dungeon {
@@ -19,6 +20,9 @@ export default function Dashboard() {
     description: string
     date: string
   }
+
+  const { data: session } = useSession();
+
 
   const [dungeons, setDungeons] = useState<Dungeon[]>([])
   const { toast } = useToast()
@@ -74,8 +78,12 @@ export default function Dashboard() {
     });
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  console.log('dash session', session);
   
-  //console.log(dungeons) 
+  //if (session?.user.role != "admin") {
+  //  redirect("/")
+  //}
 
   return (
     <div className="px-4 py-8 text-white">

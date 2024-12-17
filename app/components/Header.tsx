@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton"
 
 import Image from "next/image";
 import { User, LogOut } from "lucide-react";
@@ -33,17 +32,10 @@ export default function Header() {
   const isLoggedIn = !!session?.user;
 
   console.log(session);
-  
 
   useEffect(() => {
     setIsLoading(false);
   }, [session]);
-
-  const Loading = () => {
-    return <Skeleton className="bg-gray-500 h-4 w-28 rounded-full" />;
-  };
-
-  if (!isLoggedIn) return null;
 
   return (
     <header className="border-b">
@@ -57,23 +49,19 @@ export default function Header() {
             className="rounded-full"
           />
         </Link>
+        {session?.user?.role === 'admin' && (
+          <Link href="/dashboard">
+            <Button>Dashboard</Button>
+          </Link>
+        )}
 
         {isLoading ? (
-          <Loading />
+          <div />
         ) : (
         <nav className="flex items-center space-x-4">
           {isLoggedIn ? (
             <>
-            <p>{session?.user?.name}</p>
-            <p>{session?.user?.email}</p>
-            <Image
-              src={session?.user?.image || ''}
-              alt="User Avatar"
-              width={32}
-              height={32}
-              className="rounded-full"
-            />
-            <DropdownMenu>
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <User className="h-5 w-5" />
@@ -91,6 +79,7 @@ export default function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <span>{session?.user?.name}</span>
+                    <span>{session?.user?.role}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />

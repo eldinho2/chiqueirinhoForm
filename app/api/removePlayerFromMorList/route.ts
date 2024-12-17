@@ -20,16 +20,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Evento não encontrado" }, { status: 404 });
     }
 
-    console.log('Player a ser removido:', playerData);
-    console.log('Lista atual:', dungeon.morList);
-
     const updatedMorList = (dungeon.morList as unknown as MorPlayer[]).filter((player: MorPlayer) => 
         !(player.nick === playerData.nick && 
           player.role === playerData.role && 
           player.ip === playerData.ip)
     );
-
-    console.log('Lista após filtro:', updatedMorList);
 
     const updatedDungeon = await prisma.dungeons.update({
         where: { eventId: eventId },

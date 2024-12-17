@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { useState } from "react"
+import Link from "next/link"
 
 export default function FormFinished() {
   const [copied, setCopied] = useState(false)
@@ -28,7 +29,9 @@ export default function FormFinished() {
           whileHover={{ rotate: 360 }}
           transition={{ duration: 0.5 }}
         >
-          <Image className="rounded-full" src="/chiqueirinhologo.webp" alt="Logo" width={100} height={100} />
+          <Link href="/">
+            <Image className="rounded-full" src="/chiqueirinhologo.webp" alt="Logo" width={100} height={100} />
+          </Link>
         </motion.div>
         <motion.div
           initial={{ y: 20, opacity: 0 }}

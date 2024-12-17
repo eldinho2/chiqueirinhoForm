@@ -3,9 +3,6 @@ import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from './auth.config';
 import prisma from './services/prisma';
 import Discord from "next-auth/providers/discord"
-
-const scopes = ['identify'].join(' ')
-
  
 async function getUser(username: string, password: string): Promise<User | null> {
   try {    
@@ -20,17 +17,13 @@ async function getUser(username: string, password: string): Promise<User | null>
     if (user.password !== password) {
       return null;
     }
-
-    console.log(user);
     
 
     const userObject = {
       id: user.id.toString(),
       name: user.username,
-      role: user.role
+      role: user.role || 'user',
     };
-
-    console.log(userObject);
     
 
     return userObject;
@@ -43,6 +36,21 @@ async function getUser(username: string, password: string): Promise<User | null>
  
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = String(user.role) || 'user';
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (token.role) {
+        session.user.role = String(token.role) || 'user';
+      }
+      return session;
+    },
+  },
   providers: [
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID,
@@ -62,9 +70,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const user = await getUser(credentials.username as string, credentials.password as string);
           
-          console.log(user);
-          
-          
+          if (!user) return null;
+
           return user;
         } catch (error) {
           console.error('Erro na autorização:', error);

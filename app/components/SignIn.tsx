@@ -3,7 +3,7 @@ import { signIn, auth } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { DiscordLogoIcon } from "@radix-ui/react-icons"
 
-export async function SignIn() {
+export default async function SignIn() {
     const session = await auth()
     if (!session) return (
         <div>
