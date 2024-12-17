@@ -47,6 +47,10 @@ export default function LoginPage() {
                     />
                 </form>
             </div>
+            
+            <button onClick={() => signIn('discord')}>Sign in</button>
+
+
         </main>
     );
 }

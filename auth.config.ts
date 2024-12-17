@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
- 
+import { DiscordProfile }  from 'next-auth/providers/discord';
+
 export const authConfig = {
   pages: {
     signIn: '/login',

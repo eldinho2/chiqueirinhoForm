@@ -75,13 +75,13 @@ export default function Dashboard() {
     setTimeout(() => setCopiedId(null), 2000);
   };
   
-  console.log(dungeons) 
+  //console.log(dungeons) 
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
+    <div className="px-4 py-8 text-white">
       <Toaster />
       <Header />
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-12 max-w-7xl mx-auto">
         <h1 className="text-5xl py-2 font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
           Dungeons
         </h1>
@@ -93,7 +93,7 @@ export default function Dashboard() {
         </Button>
       </div>
       {isLoading && <Loading />}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
         {dungeons.map((dungeon) => (
           <Card 
             key={dungeon.id} 

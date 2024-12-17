@@ -32,6 +32,9 @@ export default function Header() {
 
   const isLoggedIn = !!session?.user;
 
+  console.log(session);
+  
+
   useEffect(() => {
     setIsLoading(false);
   }, [session]);
@@ -45,7 +48,7 @@ export default function Header() {
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="text-2xl font-bold text-primary">
+        <Link href="/" className="text-2xl font-bold text-primary">
           <Image
             src="/chiqueirinhologo.webp"
             alt="Logo"
@@ -61,7 +64,16 @@ export default function Header() {
         <nav className="flex items-center space-x-4">
           {isLoggedIn ? (
             <>
-              <DropdownMenu>
+            <p>{session?.user?.name}</p>
+            <p>{session?.user?.email}</p>
+            <Image
+              src={session?.user?.image || ''}
+              alt="User Avatar"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <User className="h-5 w-5" />
