@@ -80,10 +80,6 @@ export default function Dashboard() {
   };
 
   console.log('dash session', session);
-  
-  //if (session?.user.role != "admin") {
-  //  redirect("/")
-  //}
 
   return (
     <div className="px-4 py-8 text-white">

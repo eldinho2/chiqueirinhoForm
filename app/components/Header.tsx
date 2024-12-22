@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import Image from "next/image";
+
 import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,8 +31,6 @@ export default function Header() {
   };
 
   const isLoggedIn = !!session?.user;
-
-  console.log(session);
 
   useEffect(() => {
     setIsLoading(false);
