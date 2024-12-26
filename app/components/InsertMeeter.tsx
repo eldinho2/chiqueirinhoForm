@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import { useState } from "react";
-import Image from "next/image"
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Dialog,
@@ -12,211 +12,353 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { roles as DefaultRoles } from "@/lib/roles";
 
-import { roles as DefaultRoles } from "@/lib/roles"
+interface Player {
+  nick: string;
+  role: string;
+  damage: string;
+  maxPercentage: string;
+  maxDps: string;
+  heal: string;
+  points: number;
+  percentage: string;
+  perSecond: string;
+}
 
+interface TextDG {
+  general: string;
+  healers: string;
+}
 
-export function InsertMeeter({ dungeon, morList }: any) {
+interface RoleNickPair {
+  role: string;
+  nick: string;
+}
+
+interface InsertMeeterProps {
+  dungeon: { roles: { [key: string]: { nick: string } }[]; name: string; eventId: string }[];
+  morList: { nick: string }[];
+}
+
+const dpsRoles = [
+  "X-Bow",
+  "Raiz Férrea DPS",
+  "Raiz Férrea",
+  "Águia",
+  "Frost",
+  "Fire",
+];
+
+export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
+  const [textDGs, setTextDGs] = useState<TextDG[]>([
+    { general: "", healers: "" },
+    { general: "", healers: "" },
+  ]);
+  const [presentRolesDGs, setPresentRolesDGs] = useState<Player[][]>([[], []]);
+  const [, setMissingRolesDGs] = useState<RoleNickPair[][]>([
+    [],
+    [],
+  ]);
+  const [combinedRolesDGs, setCombinedRolesDGs] = useState<Player[][]>([
+    [],
+    [],
+  ]);
+  const [scoreOverride, setScoreOverride] = useState<{
+    [nick: string]: number;
+  }>({});
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const [, setAbsentPlayers] = useState<RoleNickPair[]>([]);
+
   const roles = dungeon[0].roles;
 
-  const [textDGs, setTextDGs] = useState(["", ""]);
-  const [presentRolesDGs, setPresentRolesDGs] = useState<
-    { nick: string; role: string; damage: string; points: number }[][]
-  >([[], []]);
-  const [missingRolesDGs, setMissingRolesDGs] = useState<
-    { nick: string; role: string }[][]
-  >([[], []]);
-  const [scoreOverride, setScoreOverride] = useState<{ [nick: string]: number }>(
-    {}
-  );
-
-  const [editingNick, setEditingNick] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState<string>("");
-  const [newNick, setNewNick] = useState<string>("");
-
-  const roleNickPairs = roles.map((role: any) => {
+  const roleNickPairs: RoleNickPair[] = roles.map((role: { [key: string]: { nick: string } }) => {
     const [roleName, roleData] = Object.entries(role)[0];
     return {
       role: roleName,
-      nick: (roleData as { nick: string }).nick
+      nick: (roleData as { nick: string }).nick,
     };
   });
 
-
-
-  interface Player {
-    nick: string;
-    role: string;
-    damage: string;
-    points: number;
-  }
-
-  const extractDamage = (inputText: string, nick: string): string => {
-    const regex = new RegExp(`${nick}:\\s*(\\d+)\\(`, "i");
+  const extractHPS = (inputText: string, nick: string): string => {
+    const regex = new RegExp(`${nick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
     const match = inputText.match(regex);
 
     if (!match) {
-      console.warn(`Dano não encontrado para o jogador: ${nick}`);
+      console.warn(`HPS não encontrado para o jogador: ${nick}`);
     }
 
     return match ? match[1] : "0";
   };
-  
 
-  const handleInputChange = (
+  const extractDPS = (
     inputText: string,
-    dgIndex: number,
-    setPresentRoles: Function,
-    setMissingRoles: Function 
-  ) => {
-    const inputNicks = Array.from(inputText.matchAll(/([\w\d]+):/gm)).map(
-      (match) => match[1].toLowerCase()
+    nick: string
+  ): { total: string; percentage: string; perSecond: string } => {
+    const regex = new RegExp(
+      `${nick}:\\s*(\\d+)\\((\\d+,\\d+)%\\)\\|(\\d+,\\d+)\\s*DPS`,
+      "i"
     );
+    const match = inputText.match(regex);
 
-    const present = roleNickPairs
-      .filter(
-        ({ nick, role }: { nick: string; role: string }) =>
-          inputNicks.includes(nick.toLowerCase()) &&
-          !["Main Healer", "OffTank"].includes(role) &&
-          !morList.some(
-            (morPlayer: any) =>
-              morPlayer.nick.toLowerCase() === nick.toLowerCase()
-          )
-      )
-      .map(({ nick, role }: { nick: string; role: string }) => {
-        let points = 0;
-        if (["X-Bow", "Raiz Férrea DPS", "Raiz Férrea", "Águia", "Frost"].includes(role)) {
-          points = 0;
-        } else {
-          points = 1;
-        }
-        return {
-          nick,
-          role,
-          damage: extractDamage(inputText, nick),
-          points,
-        };
-      });
+    if (!match) {
+      console.warn(`DPS não encontrado para o jogador: ${nick}`);
+    }
 
-    const maxDps = Math.max(
-      ...present.map((player: { nick: string; role: string; damage: string; points: number }) => parseFloat(player.damage) || 0)
-    );
-
-    const presentWithScores = present.map((player: { nick: string; role: string; damage: string; points: number }) => {
-      const score = calculateScore(parseFloat(player.damage), maxDps);
-      return { ...player, points: scoreOverride[player.nick] ?? score };
-    });
-
-    setPresentRoles((prev: any[]) => {
-      const updated = [...prev];
-      updated[dgIndex] = presentWithScores.sort(
-        (a: { nick: string; role: string; damage: string; points: number }, b: { nick: string; role: string; damage: string; points: number }) => parseFloat(b.damage) - parseFloat(a.damage)
-      );
-      return updated;
-    });
-
-    console.log(morList)
-
-
-    
-
-    const missing = roleNickPairs.filter(      
-
-      ({ nick }: { nick: string }) =>
-        !inputNicks.includes(nick.toLowerCase()) &&
-        !morList.some(
-          (morPlayer: any) =>
-            morPlayer.nick.toLowerCase() === nick.toLowerCase()
-        )
-    );
-
-    setMissingRoles((prev: any[]) => {
-      const updated = [...prev];
-      updated[dgIndex] = missing;
-      return updated;
-    });
+    return match
+      ? { total: match[1], percentage: match[2], perSecond: match[3] }
+      : { total: "0", percentage: "0%", perSecond: "0" };
   };
 
-
-  const calculateScore = (dps: number, maxDps: number) => {
+  const calculateScore = (
+    dps: number,
+    maxDps: number,
+    isTopDps: boolean
+  ): number => {
+    if (isTopDps) return 2;
     const percentage = (dps / maxDps) * 100;
 
-    if (percentage >= 85) return 2;
     if (percentage >= 60) return 1;
     if (percentage < 50) return -1;
     return 0;
   };
 
-
-  const handleAddToMeeter = (
-    nick: string,
-    role: string,
+  const handleInputChange = (
+    inputText: string,
     dgIndex: number,
-    setPresentRoles: Function,
-    setMissingRoles: Function
+    setPresentRoles: React.Dispatch<React.SetStateAction<Player[][]>>,
+    isHealerText: boolean = false
   ) => {
-    const newPlayer = { nick, role, damage: "0", points: 0 };
-    setPresentRoles((prev: any[]) => {
-      const updated = [...prev];
-      updated[dgIndex] = [...updated[dgIndex], newPlayer];
-      return updated;
+    const inputNicks = Array.from(inputText.matchAll(/([\w\d]+):/gm)).map(
+      (match) => match[1].toLowerCase()
+    );
+
+    setTextDGs((prev) => {
+      const updatedTextDGs = [...prev];
+      if (isHealerText) {
+        updatedTextDGs[dgIndex].healers = inputText;
+      } else {
+        updatedTextDGs[dgIndex].general = inputText;
+      }
+      return updatedTextDGs;
     });
-    setMissingRoles((prev: any[]) => {
+
+    const combinedText = isHealerText
+      ? textDGs[dgIndex].general + "\n" + inputText
+      : inputText + "\n" + textDGs[dgIndex].healers;
+
+    const present = roleNickPairs
+      .filter(
+        ({ nick, role }) =>
+          inputNicks.includes(nick.toLowerCase()) &&
+          !["MainTank", "Scout"].includes(role) &&
+          !morList.some(
+            (morPlayer: { nick: string }) =>
+              morPlayer.nick.toLowerCase() === nick.toLowerCase()
+          )
+      )
+      .map(({ nick, role }) => {
+        let points = 1;
+        if (dpsRoles.includes(role)) {
+          points = 0;
+        }
+        const dpsData = extractDPS(combinedText, nick);
+        let heal = extractHPS(combinedText, nick);
+        heal = isNaN(parseFloat(heal)) ? "0" : heal;
+        return {
+          nick,
+          role,
+          damage: dpsData.total,
+          percentage: dpsData.percentage,
+          perSecond: dpsData.perSecond,
+          heal,
+          points: dpsRoles.includes(role) ? points : points,
+          maxPercentage: "0%",
+          maxDps: "0",
+        };
+      });
+
+    const damageRoles = present.filter((player) =>
+      dpsRoles.includes(player.role)
+    );
+    const otherRoles = present.filter(
+      (player) => !dpsRoles.includes(player.role)
+    );
+
+    const maxDps = Math.max(
+      ...damageRoles.map((player) => parseFloat(player.damage) || 0)
+    );
+
+    const topDpsPlayer = damageRoles.find(
+      (player) => parseFloat(player.damage) === maxDps
+    );
+
+    const damageRolesWithScores = damageRoles.map((player) => {
+      const isTopDps = player === topDpsPlayer;
+      const score = calculateScore(
+        parseFloat(player.damage) || 0,
+        maxDps,
+        isTopDps
+      );
+      return { ...player, points: scoreOverride[player.nick] ?? score };
+    });
+
+    const presentWithScores = [...damageRolesWithScores, ...otherRoles];
+
+    setPresentRoles((prev) => {
       const updated = [...prev];
-      updated[dgIndex] = updated[dgIndex].filter(
-        (player: any) => player.nick !== nick
+      updated[dgIndex] = presentWithScores.sort(
+        (a, b) => parseFloat(b.damage) - parseFloat(a.damage)
       );
       return updated;
     });
+
+    const missing = roleNickPairs.filter(
+      ({ nick, role }) =>
+        !inputNicks.includes(nick.toLowerCase()) &&
+        !["MainTank", "Scout"].includes(role) &&
+        !morList.some(
+          (morPlayer: { nick: string }) =>
+            morPlayer.nick.toLowerCase() === nick.toLowerCase()
+        ) &&
+        !presentRolesDGs
+          .flat()
+          .some((player) => player.nick.toLowerCase() === nick.toLowerCase())
+    );
+
+    setAbsentPlayers((prev) => {
+      const updated = [...prev, ...missing];
+      return updated;
+    });
+
+    setCombinedRolesDGs((prev) => {
+      const updated = [...prev];
+      updated[dgIndex] = [
+        ...new Map(
+          [...updated[dgIndex], ...presentWithScores].map((player) => [
+            player.nick,
+            player,
+          ])
+        ).values(),
+      ].sort((a, b) => parseFloat(b.damage) - parseFloat(a.damage));
+      return updated;
+    });
   };
 
-  const handleScoreChange = (nick: string, score: number) => {
-    setScoreOverride((prev) => ({ ...prev, [nick]: score }));
+  const handleTextareaChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+    index: number,
+    isHealerText: boolean = false
+  ) => {
+    const newText = e.target.value;
+    handleInputChange(
+      newText,
+      index,
+      setPresentRolesDGs,
+      isHealerText
+    );
+  };
+
+  const handleScoreChange = (nick: string, score: number, dgIndex: number) => {
+    setScoreOverride((prev) => ({ ...prev, [`${nick}-${dgIndex}`]: score }));
+    setPresentRolesDGs((prev) =>
+      prev.map((dg, index) =>
+        index === dgIndex
+          ? dg.map((player) =>
+              player.nick === nick ? { ...player, points: score } : player
+            )
+          : dg
+      )
+    );
+    setCombinedRolesDGs((prev) =>
+      prev.map((dg, index) =>
+        index === dgIndex
+          ? dg.map((player) =>
+              player.nick === nick ? { ...player, points: score } : player
+            )
+          : dg
+      )
+    );
   };
 
   const addNewDG = () => {
-    setTextDGs((prev) => [...prev, ""]);
+    setTextDGs((prev) => [...prev, { general: "", healers: "" }]);
     setPresentRolesDGs((prev) => [...prev, []]);
     setMissingRolesDGs((prev) => [...prev, []]);
+    setCombinedRolesDGs((prev) => [...prev, []]);
   };
 
-  const calculateTotalPoints = () => {
-    const allPlayers = new Map();
+  const removeDG = (index: number) => {
+    if (textDGs.length > 2) {
+      setTextDGs((prev) => prev.filter((_, i) => i !== index));
+      setPresentRolesDGs((prev) => prev.filter((_, i) => i !== index));
+      setMissingRolesDGs((prev) => prev.filter((_, i) => i !== index));
+      setCombinedRolesDGs((prev) => prev.filter((_, i) => i !== index));
+      setActiveTab(0);
+    }
+  };
 
-    presentRolesDGs.flat().forEach((player) => {
+  const calculateTotalPoints = (): Player[] => {
+    const allPlayers = new Map<string, Player>();
+
+    combinedRolesDGs.flat().forEach((player) => {
       if (!allPlayers.has(player.nick)) {
-        allPlayers.set(player.nick, { nick: player.nick, role: player.role, points: 0 });
+        allPlayers.set(player.nick, {
+          nick: player.nick,
+          role: player.role,
+          points: 0,
+          damage: "0",
+          percentage: "0%",
+          perSecond: "0",
+          heal: "0",
+          maxDps: "0",
+          maxPercentage: "0%",
+        });
       }
-      allPlayers.get(player.nick).points += player.points;
+      const existingPlayer = allPlayers.get(player.nick)!;
+      existingPlayer.points += player.points;
+      existingPlayer.damage = (
+        parseFloat(existingPlayer.damage) + parseFloat(player.damage)
+      ).toString();
+      existingPlayer.heal = (
+        parseFloat(existingPlayer.heal) + parseFloat(player.heal)
+      ).toString();
+
+      if (parseFloat(player.perSecond) > parseFloat(existingPlayer.maxDps)) {
+        existingPlayer.maxDps = player.perSecond;
+      }
+
+      if (
+        parseFloat(player.percentage.replace("%", "")) >
+        parseFloat(existingPlayer.maxPercentage.replace("%", ""))
+      ) {
+        existingPlayer.maxPercentage = player.percentage;
+      }
     });
 
     return Array.from(allPlayers.values());
   };
 
-  const handlePlayerEdit = (nick: string, role: string) => {
-    setEditingNick(nick);
-    setNewNick(nick);
-    setNewRole(role);
-  };
+  const handleSave = () => {
+    const totalPoints = calculateTotalPoints();
 
-  const savePlayerEdit = () => {
-    setPresentRolesDGs((prev) =>
-      prev.map((dg) =>
-        dg.map((player) =>
-          player.nick === editingNick
-            ? { ...player, nick: newNick, role: newRole }
-            : player
-        )
-      )
-    );
-    setEditingNick(null);
+    const formatedData = totalPoints.map((player) => ({
+      nick: player.nick,
+      role: player.role,
+      points: player.points,
+      damage: player.damage,
+      heal: player.heal,
+      maxDps: player.maxDps,
+      maxPercentage: player.maxPercentage,
+    }));
+
+    const data = {
+      dungeon: dungeon[0].name,
+      eventId: dungeon[0].eventId,
+      players: formatedData,
+    }
+
+    console.log("Pontuações Totais:", data);
   };
 
   const fadeIn = {
@@ -235,197 +377,264 @@ export function InsertMeeter({ dungeon, morList }: any) {
           Abrir Inserção
         </motion.button>
       </DialogTrigger>
-      <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1000px] max-h-[800px] overflow-y-auto">
+      <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[900px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-purple-300 flex justify-center">
             Calcular Meeter
           </DialogTitle>
-          <DialogDescription className="text-gray-400 flex flex-col gap-4 items-center justify-center">
+          <DialogDescription className="text-gray-400 flex flex-col gap-2 items-center justify-center">
             Insira os dados de cada DG para calcular as pontuações.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-9 justify-center">
-          {textDGs.map((textDG, index) => (
-            <motion.div
-              key={index}
-              className="p-4 bg-[#2A2A2A] rounded-lg mb-6"
-              variants={fadeIn}
-              initial="hidden"
-              animate="visible"
+        <div className="flex flex-col justify-center items-center">
+          <div className="flex gap-2 justify-center mb-4">
+            <button
+              className={`px-3 py-1 rounded-lg ${
+                activeTab === 0
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
+              }`}
+              onClick={() => setActiveTab(0)}
             >
-              <h3 className="text-lg font-semibold text-purple-300 mb-3">
-                DG {index + 1}
-              </h3>
+              DG 1
+            </button>
+            <button
+              className={`px-3 py-1 rounded-lg ${
+                activeTab === 1
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
+              }`}
+              onClick={() => setActiveTab(1)}
+            >
+              DG 2
+            </button>
+            {textDGs.slice(2).map((_, index) => (
+              <div key={index + 2} className="flex items-center">
+                <button
+                  className={`px-3 py-1 rounded-lg ${
+                    activeTab === index + 2
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-700 text-gray-300"
+                  }`}
+                  onClick={() => setActiveTab(index + 2)}
+                >
+                  DG {index + 3}
+                </button>
+                <button
+                  onClick={() => removeDG(index + 2)}
+                  className="ml-2 px-2 py-1 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700"
+                >
+                  X
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={addNewDG}
+              className="px-3 py-1 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+            >
+              Adicionar DG
+            </button>
+          </div>
+          <div className="gap-2 flex justify-center mb-4">
+            <button
+              className={`px-3 py-1 rounded-lg ${
+                activeTab === textDGs.length
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
+              }`}
+              onClick={() => setActiveTab(textDGs.length)}
+            >
+              Pontuações Totais
+            </button>
+          </div>
+        </div>
+        {textDGs.map((textDG, index) => (
+          <motion.div
+            key={index}
+            className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
+              activeTab === index ? "block" : "hidden"
+            }`}
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+          >
+            <h3 className="text-lg font-semibold text-purple-300 mb-2">
+              DG {index + 1}
+            </h3>
+            <div className="flex justify-around gap-2">
               <textarea
-                value={textDG}
-                onChange={(e) => {
-                  const updatedTextDGs = [...textDGs];
-                  updatedTextDGs[index] = e.target.value;
-                  setTextDGs(updatedTextDGs);
-                  handleInputChange(
-                    e.target.value,
-                    index,
-                    setPresentRolesDGs,
-                    setMissingRolesDGs
-                  );
-                }}
-                className="w-full p-3 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                placeholder={`Insira o log do DG ${index + 1}`}
+                value={textDG.general}
+                onChange={(e) => handleTextareaChange(e, index)}
+                className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                placeholder={`Log geral do DG ${index + 1}`}
                 rows={4}
               ></textarea>
+              <textarea
+                value={textDG.healers}
+                onChange={(e) => handleTextareaChange(e, index, true)}
+                className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                placeholder={`Log dos healers do DG ${index + 1}`}
+                rows={4}
+              ></textarea>
+            </div>
 
-              <div className="mt-4">
-                <h4 className="text-purple-400 font-semibold">{`Presentes (jogadores que constam no meeter e no forms)`}</h4>
-                <ul className="text-gray-300">
-                  {presentRolesDGs[index].map((player, playerIndex) => (
-                    <li
-                      key={playerIndex}
-                      className="flex py-2 border-b border-gray-600"
-                    >
-                      <div
-                        className="cursor-pointer hover:underline"
-                        onClick={() => handlePlayerEdit(player.nick, player.role)}
-                      >
-                      </div>
-                      <div className="flex flex-1 items-center">
-                        <span className="">{player.nick}</span>
-                        <span>
-                          <Image
-                            src={
-                              DefaultRoles.find((role) => role.value === player.role)?.icon ?? '/path/to/default/icon.png'
-                            }
-                            alt={player.role}
-                            width={20}
-                            height={20}
-                            className="mx-2"
-                          />
-                        </span> - Dano: {Number(player.damage).toLocaleString()}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>Pontos:</span>
+            <div className="mt-4">
+              <h4 className="text-purple-400 font-semibold">{`Presentes`}</h4>
+              <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b border-gray-600">
+                      Jogador
+                    </th>
+                    <th className="py-2 px-4 border-b border-gray-600">Role</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Dano</th>
+                    <th className="py-2 px-4 border-b border-gray-600">
+                      Porcentagem
+                    </th>
+                    <th className="py-2 px-4 border-b border-gray-600">DPS</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Cura</th>
+                    <th className="py-2 px-4 border-b border-gray-600">
+                      Pontos
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {combinedRolesDGs[index].map((player, playerIndex) => (
+                    <tr key={playerIndex}>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.nick}
+                      </td>
+                      <td className="py-4 px-4 border-b border-gray-600 flex items-center justify-center">
+                        <Image
+                          src={
+                            DefaultRoles.find(
+                              (role) => role.value === player.role
+                            )?.icon ?? "/path/to/default/icon.png"
+                          }
+                          alt={player.role}
+                          width={25}
+                          height={25}
+                          className="mx-2"
+                        />
+                        {player.role}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {Number(player.damage).toLocaleString()}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.percentage} %
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.perSecond}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {Number(player.heal).toLocaleString() || 0}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
                         <input
                           type="number"
                           value={
-                            scoreOverride[player.nick] ??
+                            scoreOverride[`${player.nick}-${index}`] ??
                             player.points.toString()
                           }
                           onChange={(e) =>
-                            handleScoreChange(player.nick, +e.target.value)
+                            handleScoreChange(
+                              player.nick,
+                              +e.target.value,
+                              index
+                            )
                           }
                           className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
                         />
-                      </div>
-                    </li>
+                      </td>
+                    </tr>
                   ))}
-                </ul>
-              </div>
-
-              <div className="mt-4">
-                <h4 className="text-purple-400 font-semibold">{`Ausentes (jogadores que constam no forms porem não no meeter)`}</h4>
-                <ul className="text-gray-300">
-                  {missingRolesDGs[index].map((player, playerIndex) => (
-                    <li
-                      key={playerIndex}
-                      className="flex items-center justify-between py-2 border-b border-gray-600"
-                    >
-                      {player.nick} ({player.role})
-                      <button
-                        onClick={() =>
-                          handleAddToMeeter(
-                            player.nick,
-                            player.role,
-                            index,
-                            setPresentRolesDGs,
-                            setMissingRolesDGs
-                          )
-                        }
-                        className="px-3 py-1 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700"
-                      >
-                        Adicionar
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        <button
-          onClick={addNewDG}
-          className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 mt-6"
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        ))}
+        <motion.div
+          className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
+            activeTab === textDGs.length ? "block" : "hidden"
+          }`}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
         >
-          Adicionar Nova DG
-        </button>
-        <div className="mt-6">
-          <h3 className="text-xl text-purple-400 font-bold">Pontuações Totais:</h3>
-          <ul className="text-gray-300 mt-3">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-purple-300 mb-2">
+              Pontuações Totais
+            </h3>
+            <p className="text-gray-300">
+              {calculateTotalPoints().length} - jogadores
+            </p>
+          </div>
+          <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
+                <th className="py-2 px-4 border-b border-gray-600">Role</th>
+                <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
+                <th className="py-2 px-4 border-b border-gray-600">
+                  Total de Dano
+                </th>
+                <th className="py-2 px-4 border-b border-gray-600">
+                  Cura Total
+                </th>
+                <th className="py-2 px-4 border-b border-gray-600">
+                  Maior DPS
+                </th>
+                <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
+              </tr>
+            </thead>
+            <tbody>
             {calculateTotalPoints().map((player, index) => (
-              <li
-                key={index}
-                className="flex justify-between py-2 border-b border-gray-600"
-              >
-                {editingNick === player.nick ? (
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={newNick}
-                      onChange={(e) => setNewNick(e.target.value)}
-                      className="p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                <tr key={index}>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                    {player.nick}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
+                    <Image
+                      src={
+                        DefaultRoles.find((role) => role.value === player.role)
+                          ?.icon ?? "/path/to/default/icon.png"
+                      }
+                      alt={player.role}
+                      width={25}
+                      height={25}
+                      className="mx-2"
                     />
-                    <Select required value={newRole} onValueChange={(value) => setNewRole(value)}>
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Selecione a nova role" />
-                      </SelectTrigger>
-                      <SelectContent className="w-full h-[300px] overflow-y-auto bg-black text-white">
-                        {DefaultRoles.map((selectRole) => (
-                          <SelectItem key={selectRole.value} value={selectRole.value}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{selectRole.label}</span>
-                              <Image
-                                src={selectRole.icon}
-                                alt={selectRole.label}
-                                width={26}
-                                height={26}
-                                className="ml-2"
-                              />
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <button
-                      onClick={savePlayerEdit}
-                      className="px-3 py-1 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
-                    >
-                      Salvar
-                    </button>
-                  </div>
-
-                ) : (
-                  <div
-                    className="cursor-pointer hover:underline flex justify-center items-center space-x-2"
-                    onClick={() => handlePlayerEdit(player.nick, player.role)}
-                  >
-                    <span>{player.nick}</span>
-                    <span className="text-gray-500">({player.role})</span>
-                    <span>
-                      <Image
-                        src={
-                          DefaultRoles.find((role) => role.value === player.role)?.icon ?? '/path/to/default/icon.png'
-                        }
-                        alt={player.role}
-                        width={20}
-                        height={20}
-                        className="ml-2"
-                      />
-                    </span>
-                    <span className="ml-2">- Pontos: {player.points}</span>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+                    {player.role}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                    {player.points}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                    {Number(player.damage).toLocaleString()}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                    {player.heal}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                  {player.maxDps}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-600 text-center">
+                    {player.maxPercentage}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex justify-center mt-4">
+            <button
+              className="p-2 rounded-lg bg-green-600 font-bold"
+              onClick={handleSave}
+            >
+              Salvar
+            </button>
+          </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
