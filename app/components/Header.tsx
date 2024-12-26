@@ -1,22 +1,13 @@
-'use client'
+"use client";
 
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
 import Image from "next/image";
-
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { redirect } from "next/navigation";
-
-import { useSession } from "next-auth/react"
+import { admins } from "@/lib/admins";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -27,7 +18,7 @@ export default function Header() {
   };
 
   const handleLogin = () => {
-    redirect('/login');
+    redirect("/login");
   };
 
   const isLoggedIn = !!session?.user;
@@ -36,65 +27,78 @@ export default function Header() {
     setIsLoading(false);
   }, [session]);
 
+  if (isLoading) {
+    return null;
+  }
+  
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-primary">
+    <header className="bg-[#2A2A2A] border-b border-[#3A3A3A] text-white">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/chiqueirinhologo.webp"
             alt="Logo"
-            width={50}
-            height={50}
+            width={40}
+            height={40}
             className="rounded-full"
           />
+          <span className="text-xl font-bold">Chiqueirinho</span>
         </Link>
-        {session?.user?.role === 'admin' && (
-          <Link href="/dashboard">
-            <Button>Dashboard</Button>
-          </Link>
-        )}
 
-        {isLoading ? (
-          <div />
-        ) : (
-        <nav className="flex items-center space-x-4">
+        <div className="flex items-center gap-4">
+          {session?.user?.role && admins.includes(session?.user?.role) && (
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="text-white">
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+          )}
+
           {isLoggedIn ? (
             <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <User className="h-5 w-5" />
-                    <span className="sr-only">User menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-gray-900" align="end">
-                  <DropdownMenuItem>
-                    <Link
-                      href="/dashboard"
-                      className="text-sm font-medium text-muted-foreground hover:text-primary"
-                    >
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>{session?.user?.name}</span>
-                    <span>{session?.user?.role}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sair</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link
+                href={`/perfil/${session?.user?.id}`}
+                className="flex items-center gap-2"
+              >
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt="User Avatar"
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <User className="w-8 h-8 p-1 rounded-full bg-[#3A3A3A]" />
+                )}
+                <Button variant="ghost" size="sm" className="text-white">
+                  Perfil
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-white"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
             </>
           ) : (
-            <Button onClick={handleLogin} variant="ghost">
-              Login
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogin}
+              className="text-white"
+            >
+              Entrar
             </Button>
-            )}
-          </nav>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );
 }
+

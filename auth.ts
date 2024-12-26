@@ -1,45 +1,99 @@
-import NextAuth, { User } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import prisma from './services/prisma';
 import Discord from "next-auth/providers/discord"
- 
-async function getUser(username: string, password: string): Promise<User | null> {
-  try {    
-    const user = await prisma.users.findUnique({
-      where: { username },
-    });
+import { admins } from './lib/admins';
 
-    if (!user) {
-      return null;
+interface ProfileInterface {
+  id: string;
+  username: string;
+  email: string;
+  name: string;
+  global_name: string;
+  image_url: string;
+  banner: string;
+}
+
+async function findOrCreateUser(profile: ProfileInterface) {  
+  let user = await prisma.users.findUnique({
+    where: { userID: profile.id },
+  });
+
+  let role = 'user';
+
+  try {
+    const response = await fetch(`http://localhost:8000/roles/${profile.id}`);
+    const data = await response.json();
+
+    console.log(data);
+
+    if (Array.isArray(data) && data.length > 0) {
+      for (const roleName of admins) {
+        if (data.includes(roleName)) {
+          role = roleName;
+          break;
+        }
+      }
     }
-
-    if (user.password !== password) {
-      return null;
-    }
-    
-
-    const userObject = {
-      id: user.id.toString(),
-      name: user.username,
-      role: user.role || 'user',
-    };
-    
-
-    return userObject;
 
   } catch (error) {
-    console.error('Erro ao buscar usuário:', error);
-    return null;
+    console.error(error); 
   }
+
+  console.log(role);
+
+  if (!user) {
+    user = await prisma.users.create({
+      data: {
+        userID: profile.id,
+        username: profile.username,
+        email: profile.email,
+        name: profile.global_name,
+        image: profile.image_url,
+        banner: profile.banner,
+        role: role,
+        createdAt: new Date(),
+      },
+    });
+  } else {
+    await prisma.users.update({
+      where: { userID: profile.id },
+      data: {
+        username: profile.username,
+        name: profile.global_name,
+        image: profile.image_url,
+        banner: profile.banner,
+        role: role,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  return user;
 }
- 
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account && account.provider === 'discord') {
+        if (profile) {
+          user.id = profile.id ?? '';
+          user.username = (profile as { username: string }).username;
+          user.banner = profile.banner as string;
+        }        
+        const dbProfile = await findOrCreateUser(profile as unknown as ProfileInterface);
+        user.role = dbProfile.role;
+
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.role = String(user.role) || 'user';
+        token.id = user.id; 
+        token.username = user.username; 
+        token.banner = user.banner; 
       }
       return token;
     },
@@ -48,6 +102,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.role) {
         session.user.role = String(token.role) || 'user';
       }
+      session.user.id = token.id as string; 
+      session.user.username = token.username as string; 
+      session.user.banner = token.banner as string; 
       return session;
     },
   },
@@ -56,28 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
       authorization: "https://discord.com/oauth2/authorize?client_id=1298754230013923468&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback%2Fdiscord&scope=identify",
-    }),
-    Credentials({
-      credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        try {          
-          if (!credentials?.username || !credentials?.password) {
-            return null;
-          }
-
-          const user = await getUser(credentials.username as string, credentials.password as string);
-          
-          if (!user) return null;
-
-          return user;
-        } catch (error) {
-          console.error('Erro na autorização:', error);
-          return null;
-        }
-      },
+      issuer: "https://discord.com",
     }),
   ],
 });

@@ -3,7 +3,7 @@ import { Trash2  } from "lucide-react";
 
 interface MorListProps {
   eventId: string;
-  morList: any[];
+  morList: { nick: string; role: string; roleIcon: string; ip: string }[];
 }
 
 export default function MorList({ eventId, morList }: MorListProps) {

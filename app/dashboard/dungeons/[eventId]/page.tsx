@@ -2,13 +2,12 @@
 
 import Header from "@/app/components/Header";
 import { useParams } from "next/navigation";
-import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import Loading from "@/utils/Loading";
-import { Plus, Trash2, Pencil } from "lucide-react";
 import useSWR from "swr";
+import Image from "next/image";
 import { roles } from "@/lib/roles";
-import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, useState } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -24,6 +23,7 @@ import { InsertMeeter } from "@/app/components/InsertMeeter";
 
 import PlayerFormOptions from '@/app/components/PlayerFormOptions';
 import MorList from '@/app/components/MorList';
+import ErrorPage from "@/utils/ErrorPage";
 
 interface Role {
   value: string;
@@ -72,13 +72,13 @@ export default function Dungeons() {
         <Loading />
       </div>
     );
-  if (error) return <div>Erro ao carregar dados</div>;
+  if (error) return <ErrorPage />;
 
   const filterUsersByRole = (roleName: string) => {
     const roleUsers =
       dungeonsDetails[0]?.roles
-        ?.filter((role: any) => Object.keys(role)[0] === roleName)
-        .map((role: any) => ({
+        ?.filter((role: Record<string, { nick: string; ip?: string; hasMor?: boolean }>) => Object.keys(role)[0] === roleName)
+        .map((role: Record<string, { nick: string; ip?: string; hasMor?: boolean }>) => ({
           nick: role[roleName]?.nick,
           ip: role[roleName]?.ip || "0",
           hasMor: role[roleName]?.hasMor || false,
@@ -179,9 +179,6 @@ export default function Dungeons() {
           <span className="text-gray-400 text-sm my-6">
             {dungeonsDetails[0]?.roles.length} pings
           </span>
-          <div>
-            <InsertMeeter dungeon={dungeonsDetails} morList={dungeonsDetails[0]?.morList} />
-          </div>
           <div className="my-6">
             <Dialog>
               <DialogTrigger>Limpar Formulário</DialogTrigger>
@@ -198,6 +195,9 @@ export default function Dungeons() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+          </div>
+          <div>
+            <InsertMeeter dungeon={dungeonsDetails} morList={dungeonsDetails[0]?.morList} />
           </div>
         </div>
         <div className="flex flex-col justify-center lg:flex-row gap-4 mb-8">

@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const session = await auth();
-  const role = session?.user.role;
+  const role = session?.user?.email;
 
   const currentPath = request.nextUrl.pathname;
   
@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (currentPath === "/dashboard") {
-    if (role !== "admin") {
+    if (role !== "viniciusfod@gmail.com") {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

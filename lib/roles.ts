@@ -13,5 +13,6 @@ export const roles = [
     { value: "X-Bow", label: "X-Bow", icon: "/rolesIcons/xbow.webp" },
     { value: "Águia", label: "Águia", icon: "/rolesIcons/aguia.webp" },
     { value: "Frost", label: "Frost", icon: "/rolesIcons/frost.webp" },
-    { value: "Scout", label: "Scout", icon: "/rolesIcons/scout.webp" },
+    { value: "Fire", label: "Fire", icon: "/rolesIcons/fire.webp" },
+    //{ value: "Scout", label: "Scout", icon: "/rolesIcons/scout.webp" },
   ]

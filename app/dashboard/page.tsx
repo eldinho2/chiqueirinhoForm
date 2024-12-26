@@ -82,7 +82,7 @@ export default function Dashboard() {
   console.log('dash session', session);
 
   return (
-    <div className="px-4 py-8 text-white">
+    <div>
       <Toaster />
       <Header />
       <div className="flex justify-between items-center mb-12 max-w-7xl mx-auto">

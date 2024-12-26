@@ -1,0 +1,1 @@
+export  const admins = ['Leitão 🤴🏻', 'Administrador', 'CALLER', 'Ajudante ‍⚖️'];
