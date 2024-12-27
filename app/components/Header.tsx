@@ -42,7 +42,7 @@ export default function Header() {
             height={40}
             className="rounded-full"
           />
-          <span className="text-xl font-bold">Chiqueirinho</span>
+          <span className={`text-xl font-extrabold`}>Chiqueirinho</span>
         </Link>
 
         <div className="flex items-center gap-4">

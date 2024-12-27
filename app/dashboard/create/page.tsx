@@ -43,22 +43,24 @@ export default function CreateDungeonPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="mx-auto">
       <Header />
-      <h1 className="text-3xl font-bold mb-6">Create New Dungeon</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Dungeon Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            autoFocus
-          />
-        </div>
-        <Button type="submit" className="w-full">Create Dungeon</Button>
-      </form>
+      <div className="max-w-md mx-auto mt-4">
+        <h1 className="text-3xl font-bold mb-6">Criar Dungeon</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome da DG</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+            />
+          </div>
+          <Button type="submit" className="w-full shadow-sm hover:bg-[#747474] bg-[#1A1A1A]">Criar Dungeon</Button>
+        </form>
+      </div>
     </div>
   )
 }
