@@ -14,62 +14,67 @@ interface ProfileInterface {
   banner: string;
 }
 
-async function findOrCreateUser(profile: ProfileInterface) {  
-  let user = await prisma.users.findUnique({
-    where: { userID: profile.id },
-  });
-
-  let role = 'user';
-
+async function findOrCreateUser(profile: ProfileInterface) {
   try {
-    const response = await fetch(`http://localhost:8000/roles/${profile.id}`);
+    const response = await fetch(`http://localhost:8000/users/${profile.id}`);
     const data = await response.json();
+    const nickName = data.nickname;
 
-    console.log(data);
+    if (!nickName) {
+      throw new Error('Nickname não encontrado');
+    }
 
-    if (Array.isArray(data) && data.length > 0) {
+    let user = await prisma.users.findUnique({
+      where: { name: nickName },
+    });
+
+    let role = 'user';
+
+    const roleResponse = await fetch(`http://localhost:8000/roles/${profile.id}`);
+    const roleData = await roleResponse.json();
+
+    if (Array.isArray(roleData) && roleData.length > 0) {
       for (const roleName of admins) {
-        if (data.includes(roleName)) {
+        if (roleData.includes(roleName)) {
           role = roleName;
           break;
         }
       }
     }
 
+    if (!user) {
+      user = await prisma.users.create({
+        data: {
+          userID: profile.id,
+          username: profile.username,
+          email: profile.email,
+          name: nickName.toLowerCase(),
+          image: profile.image_url,
+          banner: profile.banner,
+          role: role,
+          createdAt: new Date(),
+        },
+      });
+    } else {
+      user = await prisma.users.update({
+        where: { name: nickName },
+        data: {
+          userID: profile.id,
+          username: profile.username,
+          name: nickName.toLowerCase(),
+          image: profile.image_url,
+          banner: profile.banner,
+          role: role,
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    return user;
   } catch (error) {
-    console.error(error); 
+    console.log('Erro ao encontrar ou criar o usuário:', error);
+    throw error;
   }
-
-  console.log(role);
-
-  if (!user) {
-    user = await prisma.users.create({
-      data: {
-        userID: profile.id,
-        username: profile.username,
-        email: profile.email,
-        name: profile.global_name,
-        image: profile.image_url,
-        banner: profile.banner,
-        role: role,
-        createdAt: new Date(),
-      },
-    });
-  } else {
-    await prisma.users.update({
-      where: { userID: profile.id },
-      data: {
-        username: profile.username,
-        name: profile.global_name,
-        image: profile.image_url,
-        banner: profile.banner,
-        role: role,
-        updatedAt: new Date(),
-      },
-    });
-  }
-
-  return user;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

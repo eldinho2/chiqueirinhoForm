@@ -3,7 +3,7 @@ import Image from "next/image"
 
 export default function ErrorPage() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="">
             <Header />
             <h1 className="text-center text-red-500 p-4">Oops! Algo deu errado.</h1>
             <Image 
@@ -11,6 +11,7 @@ export default function ErrorPage() {
                 alt="Error" 
                 width={300} 
                 height={300} 
+                className="mx-auto"
             />
         </div>
     )

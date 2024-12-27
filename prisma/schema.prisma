@@ -16,11 +16,11 @@ datasource db {
 model Users {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userID    String   @unique
-  username  String
-  email     String
-  name      String
-  image     String
-  banner    String
+  username  String?
+  email     String?
+  name      String   @unique
+  image     String?
+  banner    String?
   password  String?
   role      String
   createdAt DateTime @default(now())

@@ -6,8 +6,6 @@ export async function GET(request: NextRequest) {
   try {
     const profileId = request.nextUrl.pathname.split('/').pop() || ''
 
-    console.log('Profile ID:', profileId);
-
     if (!profileId) {
       return NextResponse.json({ error: "Profile ID is required" }, { status: 400 });
     }
@@ -19,9 +17,6 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    console.log(user);
-    
 
     return NextResponse.json(user);
   } catch (error) {

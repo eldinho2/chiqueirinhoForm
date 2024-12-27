@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Shield, Sword, Trophy, Star } from 'lucide-react';
 import Header from "@/app/components/Header";
@@ -24,9 +23,6 @@ export default function ProfileComponent() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { data: session } = useSession();
-
-  console.log(session?.user);
     
   useEffect(() => {
     const fetchDungeons = async () => {
