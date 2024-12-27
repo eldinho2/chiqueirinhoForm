@@ -39,6 +39,7 @@ model Dungeons {
 
 model DungeonsHistory {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  dungeon   String
   eventId   String   @unique
   players   Json[]
   createdAt DateTime @default(now())

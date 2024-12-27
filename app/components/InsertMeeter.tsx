@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 
 import { roles as DefaultRoles } from "@/lib/roles";
@@ -37,7 +38,11 @@ interface RoleNickPair {
 }
 
 interface InsertMeeterProps {
-  dungeon: { roles: { [key: string]: { nick: string } }[]; name: string; eventId: string }[];
+  dungeon: {
+    roles: { [key: string]: { nick: string } }[];
+    name: string;
+    eventId: string;
+  }[];
   morList: { nick: string }[];
 }
 
@@ -56,10 +61,10 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     { general: "", healers: "" },
   ]);
   const [presentRolesDGs, setPresentRolesDGs] = useState<Player[][]>([[], []]);
-  const [, setMissingRolesDGs] = useState<RoleNickPair[][]>([
-    [],
-    [],
-  ]);
+
+  const [alreadyHasHistory, setAlreadyHasHistory] = useState(false);
+  const [warningWasRead, setWarningWasRead] = useState(false);
+  const [, setMissingRolesDGs] = useState<RoleNickPair[][]>([[], []]);
   const [combinedRolesDGs, setCombinedRolesDGs] = useState<Player[][]>([
     [],
     [],
@@ -69,16 +74,40 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   }>({});
   const [activeTab, setActiveTab] = useState<number>(0);
   const [, setAbsentPlayers] = useState<RoleNickPair[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWarningOpen, setIsWarningOpen] = useState(false);
+
+  useEffect(() => {
+    const checkIfHistoryCanBeUploaded = async () => {
+      const check = await fetch("/api/checkIfHistoryCanBeUploaded", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventId: dungeon[0].eventId }),
+      });
+      const checkJson = await check.json();
+
+      if (checkJson.cadastrada) {
+        setAlreadyHasHistory(true);
+        return;
+      }
+    }
+    checkIfHistoryCanBeUploaded()
+  }, [dungeon]);
 
   const roles = dungeon[0].roles;
 
-  const roleNickPairs: RoleNickPair[] = roles.map((role: { [key: string]: { nick: string } }) => {
-    const [roleName, roleData] = Object.entries(role)[0];
-    return {
-      role: roleName,
-      nick: (roleData as { nick: string }).nick,
-    };
-  });
+  const roleNickPairs: RoleNickPair[] = roles.map(
+    (role: { [key: string]: { nick: string } }) => {
+      const [roleName, roleData] = Object.entries(role)[0];
+      return {
+        role: roleName,
+        nick: (roleData as { nick: string }).nick,
+      };
+    }
+  );
 
   const extractHPS = (inputText: string, nick: string): string => {
     const regex = new RegExp(`${nick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
@@ -251,12 +280,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     isHealerText: boolean = false
   ) => {
     const newText = e.target.value;
-    handleInputChange(
-      newText,
-      index,
-      setPresentRolesDGs,
-      isHealerText
-    );
+    handleInputChange(newText, index, setPresentRolesDGs, isHealerText);
   };
 
   const handleScoreChange = (nick: string, score: number, dgIndex: number) => {
@@ -339,7 +363,16 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     return Array.from(allPlayers.values());
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsWarningOpen(true)
+
+    if (warningWasRead === false) return;
+
+    setIsWarningOpen(false)
+
+    console.log('click');
+    
+    setIsSaving(true);
     const totalPoints = calculateTotalPoints();
 
     const formatedData = totalPoints.map((player) => ({
@@ -356,9 +389,25 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       dungeon: dungeon[0].name,
       eventId: dungeon[0].eventId,
       players: formatedData,
+    };
+
+    if (alreadyHasHistory) {
+      setIsSaving(false);
+      return;
     }
 
-    console.log("Pontuações Totais:", data);
+    await fetch("/api/insertDungeonHistory", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    setIsSaving(false);
+    setActiveTab(0);
+    setIsDialogOpen(false);
+    setAlreadyHasHistory(true);
   };
 
   const fadeIn = {
@@ -367,275 +416,317 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <motion.button
-          className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 active:scale-95 transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Abrir Inserção
-        </motion.button>
-      </DialogTrigger>
-      <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[900px] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-purple-300 flex justify-center">
-            Calcular Meeter
-          </DialogTitle>
-          <DialogDescription className="text-gray-400 flex flex-col gap-2 items-center justify-center">
-            Insira os dados de cada DG para calcular as pontuações.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col justify-center items-center">
-          <div className="flex gap-2 justify-center mb-4">
-            <button
-              className={`px-3 py-1 rounded-lg ${
-                activeTab === 0
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
+    <>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <motion.button
+            className={`px-6 py-3 font-semibold rounded-lg transition-all ${
+              alreadyHasHistory
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-purple-600 text-white hover:bg-purple-700 active:scale-95"
+            }`}
+            whileHover={{ scale: alreadyHasHistory ? 1 : 1.05 }}
+            whileTap={{ scale: alreadyHasHistory ? 1 : 0.95 }}
+            disabled={alreadyHasHistory}
+          >
+            {alreadyHasHistory ? "Histórico já cadastrado" : "Abrir Inserção"}
+          </motion.button>
+        </DialogTrigger>
+        <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[900px] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-purple-300 flex justify-center">
+              Calcular Meeter
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 flex flex-col gap-2 items-center justify-center">
+              Insira os dados de cada DG para calcular as pontuações.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col justify-center items-center">
+            <div className="flex gap-2 justify-center mb-4">
+              <button
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === 0
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
+                onClick={() => setActiveTab(0)}
+              >
+                DG 1
+              </button>
+              <button
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === 1
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
+                onClick={() => setActiveTab(1)}
+              >
+                DG 2
+              </button>
+              {textDGs.slice(2).map((_, index) => (
+                <div key={index + 2} className="flex items-center">
+                  <button
+                    className={`px-3 py-1 rounded-lg ${
+                      activeTab === index + 2
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-700 text-gray-300"
+                    }`}
+                    onClick={() => setActiveTab(index + 2)}
+                  >
+                    DG {index + 3}
+                  </button>
+                  <button
+                    onClick={() => removeDG(index + 2)}
+                    className="ml-2 px-2 py-1 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addNewDG}
+                className="px-3 py-1 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+              >
+                Adicionar DG
+              </button>
+            </div>
+            <div className="gap-2 flex justify-center mb-4">
+              <button
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === textDGs.length
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
+                onClick={() => setActiveTab(textDGs.length)}
+              >
+                Pontuações Totais
+              </button>
+            </div>
+          </div>
+          {textDGs.map((textDG, index) => (
+            <motion.div
+              key={index}
+              className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
+                activeTab === index ? "block" : "hidden"
               }`}
-              onClick={() => setActiveTab(0)}
+              variants={fadeIn}
+              initial="hidden"
+              animate="visible"
             >
-              DG 1
-            </button>
-            <button
-              className={`px-3 py-1 rounded-lg ${
-                activeTab === 1
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
-              }`}
-              onClick={() => setActiveTab(1)}
-            >
-              DG 2
-            </button>
-            {textDGs.slice(2).map((_, index) => (
-              <div key={index + 2} className="flex items-center">
-                <button
-                  className={`px-3 py-1 rounded-lg ${
-                    activeTab === index + 2
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-700 text-gray-300"
-                  }`}
-                  onClick={() => setActiveTab(index + 2)}
-                >
-                  DG {index + 3}
-                </button>
-                <button
-                  onClick={() => removeDG(index + 2)}
-                  className="ml-2 px-2 py-1 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700"
-                >
-                  X
-                </button>
+              <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                DG {index + 1}
+              </h3>
+              <div className="flex justify-around gap-2">
+                <textarea
+                  value={textDG.general}
+                  onChange={(e) => handleTextareaChange(e, index)}
+                  className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder={`Log geral do DG ${index + 1}`}
+                  rows={4}
+                ></textarea>
+                <textarea
+                  value={textDG.healers}
+                  onChange={(e) => handleTextareaChange(e, index, true)}
+                  className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder={`Log dos healers do DG ${index + 1}`}
+                  rows={4}
+                ></textarea>
               </div>
-            ))}
-            <button
-              onClick={addNewDG}
-              className="px-3 py-1 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
-            >
-              Adicionar DG
-            </button>
-          </div>
-          <div className="gap-2 flex justify-center mb-4">
-            <button
-              className={`px-3 py-1 rounded-lg ${
-                activeTab === textDGs.length
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
-              }`}
-              onClick={() => setActiveTab(textDGs.length)}
-            >
-              Pontuações Totais
-            </button>
-          </div>
-        </div>
-        {textDGs.map((textDG, index) => (
+
+              <div className="mt-4">
+                <h4 className="text-purple-400 font-semibold">{`Presentes`}</h4>
+                <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Jogador
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Role
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Dano
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Porcentagem
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        DPS
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Cura
+                      </th>
+                      <th className="py-2 px-4 border-b border-gray-600">
+                        Pontos
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {combinedRolesDGs[index].map((player, playerIndex) => (
+                      <tr key={playerIndex}>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          {player.nick}
+                        </td>
+                        <td className="py-4 px-4 border-b border-gray-600 flex items-center justify-center">
+                          <Image
+                            src={
+                              DefaultRoles.find(
+                                (role) => role.value === player.role
+                              )?.icon ?? "/path/to/default/icon.png"
+                            }
+                            alt={player.role}
+                            width={25}
+                            height={25}
+                            className="mx-2"
+                          />
+                          {player.role}
+                        </td>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          {Number(player.damage).toLocaleString()}
+                        </td>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          {player.percentage} %
+                        </td>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          {player.perSecond}
+                        </td>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          {Number(player.heal).toLocaleString() || 0}
+                        </td>
+                        <td className="py-2 px-4 border-b border-gray-600 text-center">
+                          <input
+                            type="number"
+                            value={
+                              scoreOverride[`${player.nick}-${index}`] ??
+                              player.points.toString()
+                            }
+                            onChange={(e) =>
+                              handleScoreChange(
+                                player.nick,
+                                +e.target.value,
+                                index
+                              )
+                            }
+                            className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          ))}
           <motion.div
-            key={index}
             className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
-              activeTab === index ? "block" : "hidden"
+              activeTab === textDGs.length ? "block" : "hidden"
             }`}
             variants={fadeIn}
             initial="hidden"
             animate="visible"
           >
-            <h3 className="text-lg font-semibold text-purple-300 mb-2">
-              DG {index + 1}
-            </h3>
-            <div className="flex justify-around gap-2">
-              <textarea
-                value={textDG.general}
-                onChange={(e) => handleTextareaChange(e, index)}
-                className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                placeholder={`Log geral do DG ${index + 1}`}
-                rows={4}
-              ></textarea>
-              <textarea
-                value={textDG.healers}
-                onChange={(e) => handleTextareaChange(e, index, true)}
-                className="w-1/2 p-2 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                placeholder={`Log dos healers do DG ${index + 1}`}
-                rows={4}
-              ></textarea>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                Pontuações Totais
+              </h3>
+              <p className="text-gray-300">
+                {calculateTotalPoints().length} - jogadores
+              </p>
             </div>
-
-            <div className="mt-4">
-              <h4 className="text-purple-400 font-semibold">{`Presentes`}</h4>
-              <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-600">
-                      Jogador
-                    </th>
-                    <th className="py-2 px-4 border-b border-gray-600">Role</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Dano</th>
-                    <th className="py-2 px-4 border-b border-gray-600">
-                      Porcentagem
-                    </th>
-                    <th className="py-2 px-4 border-b border-gray-600">DPS</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Cura</th>
-                    <th className="py-2 px-4 border-b border-gray-600">
-                      Pontos
-                    </th>
+            <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Jogador
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">Role</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Total de Dano
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Cura Total
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Maior DPS
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calculateTotalPoints().map((player, index) => (
+                  <tr key={index}>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {player.nick}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
+                      <Image
+                        src={
+                          DefaultRoles.find((role) => role.value === player.role)
+                            ?.icon ?? "/path/to/default/icon.png"
+                        }
+                        alt={player.role}
+                        width={25}
+                        height={25}
+                        className="mx-2"
+                      />
+                      {player.role}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {player.points}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {Number(player.damage).toLocaleString()}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {player.heal}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {player.maxDps}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-600 text-center">
+                      {player.maxPercentage}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {combinedRolesDGs[index].map((player, playerIndex) => (
-                    <tr key={playerIndex}>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        {player.nick}
-                      </td>
-                      <td className="py-4 px-4 border-b border-gray-600 flex items-center justify-center">
-                        <Image
-                          src={
-                            DefaultRoles.find(
-                              (role) => role.value === player.role
-                            )?.icon ?? "/path/to/default/icon.png"
-                          }
-                          alt={player.role}
-                          width={25}
-                          height={25}
-                          className="mx-2"
-                        />
-                        {player.role}
-                      </td>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        {Number(player.damage).toLocaleString()}
-                      </td>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        {player.percentage} %
-                      </td>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        {player.perSecond}
-                      </td>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        {Number(player.heal).toLocaleString() || 0}
-                      </td>
-                      <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        <input
-                          type="number"
-                          value={
-                            scoreOverride[`${player.nick}-${index}`] ??
-                            player.points.toString()
-                          }
-                          onChange={(e) =>
-                            handleScoreChange(
-                              player.nick,
-                              +e.target.value,
-                              index
-                            )
-                          }
-                          className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-center mt-4">
+              <button
+                className="p-2 rounded-lg bg-green-600 font-bold"
+                onClick={() => {
+                  handleSave()
+                }}
+                disabled={isSaving}
+              >
+                {isSaving ? "Salvando..." : "Salvar"}
+              </button>
             </div>
           </motion.div>
-        ))}
-        <motion.div
-          className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
-            activeTab === textDGs.length ? "block" : "hidden"
-          }`}
-          variants={fadeIn}
-          initial="hidden"
-          animate="visible"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-purple-300 mb-2">
-              Pontuações Totais
-            </h3>
-            <p className="text-gray-300">
-              {calculateTotalPoints().length} - jogadores
+        </DialogContent>
+      </Dialog>
+        <Dialog open={isWarningOpen}>
+          <DialogContent className="bg-[#2A2A2A] p-6 rounded-lg w-[400px]">
+            <DialogTitle className="text-xl font-bold text-purple-300 mb-4">
+              Aviso Importante
+            </DialogTitle>
+            <p className="text-gray-300 mb-4">
+              A operação de salvar é irreversível. Por favor, confira os dados
+              antes de prosseguir.
             </p>
-          </div>
-          <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
-                <th className="py-2 px-4 border-b border-gray-600">Role</th>
-                <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
-                <th className="py-2 px-4 border-b border-gray-600">
-                  Total de Dano
-                </th>
-                <th className="py-2 px-4 border-b border-gray-600">
-                  Cura Total
-                </th>
-                <th className="py-2 px-4 border-b border-gray-600">
-                  Maior DPS
-                </th>
-                <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
-              </tr>
-            </thead>
-            <tbody>
-            {calculateTotalPoints().map((player, index) => (
-                <tr key={index}>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                    {player.nick}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
-                    <Image
-                      src={
-                        DefaultRoles.find((role) => role.value === player.role)
-                          ?.icon ?? "/path/to/default/icon.png"
-                      }
-                      alt={player.role}
-                      width={25}
-                      height={25}
-                      className="mx-2"
-                    />
-                    {player.role}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                    {player.points}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                    {Number(player.damage).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                    {player.heal}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                  {player.maxDps}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-600 text-center">
-                    {player.maxPercentage}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-center mt-4">
-            <button
-              className="p-2 rounded-lg bg-green-600 font-bold"
-              onClick={handleSave}
-            >
-              Salvar
-            </button>
-          </div>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
+            <div className="flex justify-end">
+              <DialogClose
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                onClick={() => {
+                  setIsWarningOpen(false);
+                  setWarningWasRead(true);
+                }}
+              >
+                OK
+              </DialogClose>
+            </div>
+          </DialogContent>
+        </Dialog>
+    </>
   );
 }

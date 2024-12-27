@@ -8,17 +8,6 @@ import useSWR from "swr";
 import Image from "next/image";
 import { roles } from "@/lib/roles";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog"
-
 import { InsertMeeter } from "@/app/components/InsertMeeter";
 
 import PlayerFormOptions from '@/app/components/PlayerFormOptions';
@@ -34,20 +23,6 @@ interface Role {
 export default function Dungeons() {
   const params = useParams();
   const eventId = params?.eventId as string;
-
-  const cleanUpRoles = () => {
-    fetch(`/api/deleteAllFormRoles`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ eventId, roleData: dungeonsDetails[0]?.roles }),
-    }).then((response) => {
-      if (response.ok) {
-        console.log("Roles limpos com sucesso!");
-      }
-    })
-  };
 
   const fetcher = async (url: string) => {
     const response = await fetch(url);
@@ -179,23 +154,6 @@ export default function Dungeons() {
           <span className="text-gray-400 text-sm my-6">
             {dungeonsDetails[0]?.roles.length} pings
           </span>
-          <div className="my-6">
-            <Dialog>
-              <DialogTrigger>Limpar Formulário</DialogTrigger>
-              <DialogContent className="bg-[#1A1A1A] max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>⚠Isso limpará todos os pings!⚠</DialogTitle>
-                  <DialogDescription>
-                    Essa ação não pode ser desfeita.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose>Cancelar</DialogClose>
-                  <DialogClose onClick={() => cleanUpRoles()} className="bg-red-500 hover:bg-red-600 p-2">Limpar</DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
           <div>
             <InsertMeeter dungeon={dungeonsDetails} morList={dungeonsDetails[0]?.morList} />
           </div>
