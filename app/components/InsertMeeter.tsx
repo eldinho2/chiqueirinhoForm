@@ -368,10 +368,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
     if (warningWasRead === false) return;
 
-    setIsWarningOpen(false)
-
-    console.log('click');
-    
+    setIsWarningOpen(false)    
     setIsSaving(true);
     const totalPoints = calculateTotalPoints();
 
@@ -596,6 +593,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                         <td className="py-2 px-4 border-b border-gray-600 text-center">
                           <input
                             type="number"
+                            max={2}
                             value={
                               scoreOverride[`${player.nick}-${index}`] ??
                               player.points.toString()

@@ -15,8 +15,6 @@ export async function GET(
       });
     }
 
-    console.log('Query:', query);
-
     const searchResults = await prisma.users.findMany({
       where: {
         OR: [

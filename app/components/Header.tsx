@@ -8,7 +8,7 @@ import { User, LogOut, LayoutDashboard, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { redirect } from "next/navigation";
-
+import { v4 as uuidv4 } from 'uuid';
 interface SearchResult {
   userID: string;
   name: string;
@@ -48,6 +48,7 @@ export default function Header() {
   };
 
 
+
   const debouncedSearch = useDebouncedFunction(
     async (query: string) => {
       if (query.length > 0) {
@@ -82,6 +83,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await signOut();
+    redirect("/");
   };
 
   const handleLogin = () => {
@@ -146,7 +148,7 @@ export default function Header() {
               ) : (
                 searchResults.map((player) => (
                   <Link
-                    key={player.userID}
+                    key={uuidv4()}
                     href={`/perfil/${player.userID}`}
                     className="flex items-center px-4 py-2 hover:bg-[#4A4A4A] transition-colors duration-150"
                   >

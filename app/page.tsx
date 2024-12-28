@@ -1,6 +1,6 @@
 import Header from './components/Header'
 import localFont from 'next/font/local'
- 
+
 const koch = localFont({
   src: '../public/fonts/Koch Fraktur.ttf',
   weight: '100',

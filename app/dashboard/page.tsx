@@ -9,7 +9,6 @@ import { Trash2, Clipboard, CheckCheck } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
 import Loading from "@/utils/Loading";
-import { useSession } from "next-auth/react"
 
 export default function Dashboard() {
   interface Dungeon {
@@ -19,10 +18,8 @@ export default function Dashboard() {
     name: string
     description: string
     date: string
+    roles: string[]
   }
-
-  const { data: session } = useSession();
-
 
   const [dungeons, setDungeons] = useState<Dungeon[]>([])
   const { toast } = useToast()
@@ -77,9 +74,7 @@ export default function Dashboard() {
       description: "O link foi copiado para sua área de transferência.",
     });
     setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  console.log('dash session', session);
+  };  
 
   return (
     <div>
@@ -116,7 +111,7 @@ export default function Dashboard() {
                 </CardTitle>
               </div>
               <CardDescription className="text-sm text-gray-400">
-                {dungeon.creatorName}
+                {`${dungeon.creatorName} (${dungeon.roles.length} jogadores)`}
               </CardDescription>
               <CardDescription className="text-sm text-gray-400">
                 {new Date(dungeon.date).toLocaleDateString('pt-BR') + " às " + new Date(dungeon.date).toLocaleTimeString('pt-BR')}

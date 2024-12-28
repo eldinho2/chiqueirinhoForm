@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import prisma from './services/prisma';
-import Discord from "next-auth/providers/discord"
+import Discord from "next-auth/providers/discord";
 import { admins } from './lib/admins';
 
 interface ProfileInterface {
@@ -18,10 +18,14 @@ async function findOrCreateUser(profile: ProfileInterface) {
   try {
     const response = await fetch(`http://localhost:8000/users/${profile.id}`);
     const data = await response.json();
-    const nickName = data.nickname;
+    const nickName = data.nickname.toLowerCase();
 
     if (!nickName) {
       throw new Error('Nickname não encontrado');
+    }
+
+    if (!profile.id || !profile.username) {
+      throw new Error('Perfil incompleto: ID, username ou email está faltando.');
     }
 
     let user = await prisma.users.findUnique({
@@ -42,6 +46,9 @@ async function findOrCreateUser(profile: ProfileInterface) {
       }
     }
 
+    console.log(user);
+    
+
     if (!user) {
       user = await prisma.users.create({
         data: {
@@ -52,7 +59,6 @@ async function findOrCreateUser(profile: ProfileInterface) {
           image: profile.image_url,
           banner: profile.banner,
           role: role,
-          createdAt: new Date(),
         },
       });
     } else {
@@ -61,18 +67,18 @@ async function findOrCreateUser(profile: ProfileInterface) {
         data: {
           userID: profile.id,
           username: profile.username,
+          email: profile.email,
           name: nickName.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
           role: role,
-          updatedAt: new Date(),
         },
       });
     }
 
     return user;
   } catch (error) {
-    console.log('Erro ao encontrar ou criar o usuário:', error);
+    console.error('Erro ao encontrar ou criar o usuário:', error);
     throw error;
   }
 }
@@ -82,34 +88,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account && account.provider === 'discord') {
-        if (profile) {
-          user.id = profile.id ?? '';
-          user.username = (profile as { username: string }).username;
-          user.banner = profile.banner as string;
-        }        
-        const dbProfile = await findOrCreateUser(profile as unknown as ProfileInterface);
-        user.role = dbProfile.role;
+        if (!profile) {
+          console.error('Erro: Profile está vazio ou não foi recebido.');
+          return false;
+        }
 
+        try {
+          user.id = profile.id ?? '';
+          user.username = (profile as { username: string }).username ?? '';
+          user.banner = profile.banner as string ?? '';
+          user.email = profile.email as string ?? '';
+
+          const dbProfile = await findOrCreateUser(profile as unknown as ProfileInterface);
+          user.role = dbProfile.role;
+
+          return true;
+        } catch (error) {
+          console.error('Erro durante o processo de signIn:', error);
+          return false;
+        }
       }
-      return true;
+      return false;
     },
+
     async jwt({ token, user }) {
       if (user) {
         token.role = String(user.role) || 'user';
-        token.id = user.id; 
-        token.username = user.username; 
-        token.banner = user.banner; 
+        token.id = user.id ?? '';
+        token.username = user.username ?? '';
+        token.banner = user.banner ?? '';
+        token.email = user.email ?? '';
       }
       return token;
     },
 
     async session({ session, token }) {
-      if (token.role) {
-        session.user.role = String(token.role) || 'user';
-      }
-      session.user.id = token.id as string; 
-      session.user.username = token.username as string; 
-      session.user.banner = token.banner as string; 
+      session.user = session.user || {};
+      session.user.role = String(token.role) || 'user';
+      session.user.id = token.id as string ?? '';
+      session.user.username = token.username as string ?? '';
+      session.user.banner = token.banner as string ?? '';
+      session.user.email = token.email ?? '';
       return session;
     },
   },
