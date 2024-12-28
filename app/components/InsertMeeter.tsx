@@ -49,11 +49,12 @@ interface InsertMeeterProps {
 const dpsRoles = [
   "X-Bow",
   "Raiz Férrea DPS",
-  "Raiz Férrea",
   "Águia",
   "Frost",
   "Fire",
 ];
+
+
 
 export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const [textDGs, setTextDGs] = useState<TextDG[]>([
@@ -139,7 +140,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       : { total: "0", percentage: "0%", perSecond: "0" };
   };
 
-  const calculateScore = (
+  const calculateDpsScore = (
     dps: number,
     maxDps: number,
     isTopDps: boolean
@@ -147,8 +148,21 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     if (isTopDps) return 2;
     const percentage = (dps / maxDps) * 100;
 
-    if (percentage >= 60) return 1;
-    if (percentage < 50) return -1;
+    if (percentage >= 85) return 1;
+    if (percentage < 65) return -1;
+    return 0;
+  };
+
+  const calculateRaizScore = (
+    dps: number,
+    maxDps: number,
+    isTopDps: boolean
+  ): number => {
+    if (isTopDps) return 2;
+    const percentage = (dps / maxDps) * 100;
+
+    if (percentage >= 75) return 1;
+    if (percentage < 65) return -1;
     return 0;
   };
 
@@ -213,6 +227,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     const otherRoles = present.filter(
       (player) => !dpsRoles.includes(player.role)
     );
+    const raizRoles = present.filter((player) =>
+      "Raiz Férrea".includes(player.role)
+    )
 
     const maxDps = Math.max(
       ...damageRoles.map((player) => parseFloat(player.damage) || 0)
@@ -224,7 +241,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
     const damageRolesWithScores = damageRoles.map((player) => {
       const isTopDps = player === topDpsPlayer;
-      const score = calculateScore(
+      const score = calculateDpsScore(
         parseFloat(player.damage) || 0,
         maxDps,
         isTopDps
@@ -232,7 +249,19 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       return { ...player, points: scoreOverride[player.nick] ?? score };
     });
 
-    const presentWithScores = [...damageRolesWithScores, ...otherRoles];
+
+    const raizRolesWhithScores = raizRoles.map((player) => {
+      const isTopDps = player === topDpsPlayer;
+      const score = calculateRaizScore(
+        parseFloat(player.damage) || 0,
+        maxDps,
+        isTopDps
+      );
+      return { ...player, points: scoreOverride[player.nick] ?? score };
+    });
+
+
+    const presentWithScores = [...damageRolesWithScores, ...otherRoles, ...raizRolesWhithScores];
 
     setPresentRoles((prev) => {
       const updated = [...prev];
