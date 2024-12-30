@@ -19,6 +19,7 @@ model Users {
   username  String?
   email     String?
   name      String   @unique
+  nickname  String?
   image     String?
   banner    String?
   password  String?

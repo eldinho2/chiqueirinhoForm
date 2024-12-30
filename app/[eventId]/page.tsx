@@ -21,6 +21,7 @@ import ErrorPage from "@/utils/ErrorPage"
 import Header from "../components/Header"
 import { roles } from "@/lib/roles"
 import { mutate } from 'swr'
+import { useSession } from "next-auth/react"
 
 interface Dungeons {
   name: string
@@ -46,6 +47,11 @@ const itemVariants = {
 
 export default function Event() {
   const { eventId } = useParams()
+  const { data: session } = useSession()
+
+  console.log(session?.user || {});
+  
+
   const [dungeons, setDungeons] = useState<Dungeons[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -69,7 +75,6 @@ export default function Event() {
         const data = await response.json()
         setDungeons(data)
       } catch (err: unknown) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setError(err instanceof Error ? err.message : 'Erro desconhecido' as any)
       } finally {
         setIsLoading(false)
@@ -114,16 +119,19 @@ export default function Event() {
     }
   }
 
+  useEffect(() => {
+    setNick(session?.user.nick)
+  }, [session?.user.nick])
+
   if (isLoading) return <div className="min-h-screen flex flex-col items-center justify-center"><Loading /></div>
   if (error) return <div className="text-center text-red-500 p-4">Error: {error}</div>
   if (hasUserFinished) return <FormFinished />
   if (!dungeons.length) return <ErrorPage />
   
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center justify-center mb-4">
-        <Header />
-      </div>
+    <main className="min-h-screen">
+      <Header />
+      <div className="flex flex-col justify-center items-center mt-4">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -259,13 +267,12 @@ export default function Event() {
         <footer className="flex flex-col items-center gap-2">
           <p>Desenvolvido com ❤️ por luana2</p>
           <div className="flex items-center gap-2 text-xs mt-1">
-            <span>Versão 1.0.0</span>
-            <span>•</span>
-            <span>Última atualização: {new Date().toLocaleDateString('pt-BR')}</span>
+            <span>Versão 2.0.0</span>
           </div>
           <p className="mt-2">© {new Date().getFullYear()} Chiqueirinho - Todos os direitos reservados</p>
         </footer>
       </motion.div>
+      </div>
     </main>
   )
 }

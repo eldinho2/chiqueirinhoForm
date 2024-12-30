@@ -12,6 +12,7 @@ interface ProfileInterface {
   global_name: string;
   image_url: string;
   banner: string;
+  nickname: string;
 }
 
 async function findOrCreateUser(profile: ProfileInterface) {
@@ -55,7 +56,8 @@ async function findOrCreateUser(profile: ProfileInterface) {
           userID: profile.id,
           username: profile.username,
           email: profile.email,
-          name: nickName.toLowerCase(),
+          name: profile.name,
+          nickname: nickName.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
           role: role,
@@ -68,7 +70,8 @@ async function findOrCreateUser(profile: ProfileInterface) {
           userID: profile.id,
           username: profile.username,
           email: profile.email,
-          name: nickName.toLowerCase(),
+          name: profile.name,
+          nickname: nickName.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
           role: role,
@@ -100,7 +103,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.email = profile.email as string ?? '';
 
           const dbProfile = await findOrCreateUser(profile as unknown as ProfileInterface);
+          console.log(dbProfile);
+          
           user.role = dbProfile.role;
+          user.nickname = dbProfile.nickname;
+          user.nick = dbProfile.name;
 
           return true;
         } catch (error) {
@@ -118,6 +125,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.username = user.username ?? '';
         token.banner = user.banner ?? '';
         token.email = user.email ?? '';
+        token.nick = user.nick ?? '';
       }
       return token;
     },
@@ -125,10 +133,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       session.user = session.user || {};
       session.user.role = String(token.role) || 'user';
-      session.user.id = token.id as string ?? '';
-      session.user.username = token.username as string ?? '';
-      session.user.banner = token.banner as string ?? '';
+      session.user.id = token.id ?? '';
+      session.user.username = token.username ?? '';
+      session.user.banner = token.banner ?? '';
       session.user.email = token.email ?? '';
+      session.user.nick = token.nick ?? '';
       return session;
     },
   },
