@@ -12,7 +12,7 @@ import { motion } from 'framer-motion'
 
 export function EloPanel({ profile }: { profile: Profile }) {
   const [eloInfo, setEloInfo] = useState(() => {
-    const points = profile.highestStats.roleWhithMorePoints.points;
+    const points = profile?.highestStats?.roleWhithMorePoints?.points;
 
     const currentEloIndex = Object.entries(ELOS).findIndex(
       ([key, value], index) => {
@@ -44,14 +44,14 @@ export function EloPanel({ profile }: { profile: Profile }) {
       next: nextElo,
       previous: previousElo,
       progress:
-        (profile.highestStats.roleWhithMorePoints.points /
+        (profile?.highestStats?.roleWhithMorePoints.points /
           currentElo[1].threshold) *
         100,
     };
   });
 
   useEffect(() => {
-    let points = profile.highestStats.roleWhithMorePoints.points;
+    let points = profile?.highestStats?.roleWhithMorePoints.points;
 
     const currentEloIndex = Object.entries(ELOS).findIndex(
       ([key, value], index) => {
@@ -89,7 +89,7 @@ export function EloPanel({ profile }: { profile: Profile }) {
         100
       ),
     });
-  }, [profile.highestStats.roleWhithMorePoints.points]);
+  }, [profile?.highestStats?.roleWhithMorePoints.points]);
 
   console.log(eloInfo.progress.toFixed(0));
   
@@ -105,13 +105,13 @@ export function EloPanel({ profile }: { profile: Profile }) {
         <CardHeader>
           <div className="">
             <div className="flex justify-center items-center gap-4">
-              <div>{profile.highestStats.roleWhithMorePoints.role}</div>
+              <div>{profile?.highestStats?.roleWhithMorePoints?.role}</div>
               <Image
                 src={
-                  getRoleIcon(profile.highestStats.roleWhithMorePoints.role) ||
+                  getRoleIcon(profile?.highestStats?.roleWhithMorePoints?.role) ||
                   ""
                 }
-                alt={profile.highestStats.roleWhithMorePoints.role}
+                alt={profile?.highestStats?.roleWhithMorePoints?.role}
                 width={40}
                 height={40}
                 className="bg-neutral-800"
@@ -123,31 +123,19 @@ export function EloPanel({ profile }: { profile: Profile }) {
                 <span className="ml-2 text-8xl">{eloInfo.current.icon}</span>
               </CardTitle>
             </div>
-            <div className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-yellow-400" />
-              <span className="text-xl font-bold text-yellow-400">
-                {profile.highestStats.roleWhithMorePoints.points} Pontos
-              </span>
-            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-neutral-400">Progresso</span>
-                <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.round(eloInfo.progress)}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                  />
-              </div>
-              </div>
-              <div className="flex justify-center items-center">
-                <div className="w-5/6 flex items-center gap-4">
-                  {eloInfo.current ? (
+            <div className="flex justify-center items-center gap-2">
+              <Trophy className="h-6 w-6 text-yellow-400" />
+              <span className="text-xl font-bold text-yellow-400">
+                {profile?.highestStats?.roleWhithMorePoints.points} Pontos
+              </span>
+            </div>
+              <div className="flex items-center gap-4 justify-between text-sm mb-2">
+              {eloInfo.current ? (
                     <span className="flex flex-col items-center justify-center">
                       <p className={`text-sm ${eloInfo.current.textColor} `}>
                         {eloInfo.current.threshold}
@@ -155,13 +143,15 @@ export function EloPanel({ profile }: { profile: Profile }) {
                       <p>{eloInfo.current.icon}</p>
                     </span>
                   ) : null}
-                  <div className="relative w-full h-2 bg-neutral-700 rounded-full overflow-hidden">
-                    <div
-                      style={{ width: `${eloInfo.progress}%` }}
-                      className={`absolute top-0 left-0 h-full ${eloInfo.current.color} transition-all duration-300`}
-                    />
-                  </div>
-                  {eloInfo.next ? (
+                <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
+                  <motion.div 
+                    className={`h-full ${eloInfo.current.color}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.round(eloInfo.progress)}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  />
+              </div>
+              {eloInfo.next ? (
                     <span className="flex flex-col items-center justify-center">
                       <p className={`text-sm ${eloInfo.next.textColor} `}>
                         {eloInfo.next.threshold}
@@ -169,7 +159,6 @@ export function EloPanel({ profile }: { profile: Profile }) {
                       <p>{eloInfo.next.icon}</p>
                     </span>
                   ) : null}
-                </div>
               </div>
             </div>
 
@@ -179,22 +168,22 @@ export function EloPanel({ profile }: { profile: Profile }) {
               <StatItem
                 icon={<Swords className="h-5 w-5" />}
                 label="Maior Dano Causado"
-                value={profile.highestStats.highestDamage.toLocaleString()}
+                value={profile?.highestStats?.highestDamage.toLocaleString()}
               />
               <StatItem
                 icon={<Target className="h-5 w-5" />}
                 label="Maior DPS"
-                value={profile.highestStats.highestMaxDps.toFixed(2)}
+                value={profile?.highestStats?.highestMaxDps.toFixed(2)}
               />
               <StatItem
                 icon={<Percent className="h-5 w-5" />}
                 label="Maior Porcentagem"
-                value={`${profile.highestStats.highestMaxPercentage}%`}
+                value={`${profile?.highestStats?.highestMaxPercentage}%`}
               />
               <StatItem
                 icon={<Award className="h-5 w-5" />}
                 label="Role Preferida"
-                value={profile.highestStats.mostFrequentRole}
+                value={profile?.highestStats?.mostFrequentRole}
               />
             </div>
 
@@ -205,12 +194,12 @@ export function EloPanel({ profile }: { profile: Profile }) {
                 Roles Mais Jogadas
               </h4>
               <div className="space-y-4">
-                {profile.highestStats.rolesWithPoints.map((role) => (
+                {profile?.highestStats?.rolesWithPoints.map((role) => (
                   <RoleProgress
                     key={role.role}
                     role={role.role}
                     points={role.points}
-                    totalPoints={profile.highestStats.roleWhithMorePoints.points}
+                    totalPoints={profile?.highestStats?.roleWhithMorePoints.points}
                     ELOS={ELOS}
                   />
                 ))}

@@ -2,6 +2,7 @@ import React from 'react'
 import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 interface LeaderboardTableProps {
   players: any[]
@@ -53,7 +54,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                     height={32}
                     className="rounded-full"
                   />
-                  <span>{player.nick}</span>
+                  <Link href={`/perfil/${player.playerData.user.userID}`}>{player.nick}</Link>
                 </td>
                 <td className="px-4 py-3">{player.totalPoints.toLocaleString()}</td>
                 <td className="px-4 py-3">

@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
           role: player.role,
           points: player.points,
           damage: player.damage,
+          heal: player.heal,
           maxPercentage: player.maxPercentage,
           maxDps: player.maxDps,
         });

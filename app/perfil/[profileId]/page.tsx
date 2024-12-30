@@ -1,13 +1,14 @@
 'use client'
 
 import { useParams } from "next/navigation";
-import { Shield, Sword, Trophy, Zap, Flame, Clock } from 'lucide-react';
+import { Flame, Clock } from 'lucide-react';
 import Header from "@/app/components/Header";
 import { useEffect, useState } from "react";
 import Loading from "@/utils/Loading";
 import { roles } from '@/lib/roles'
 import Image from "next/image";
 import { EloPanel } from "@/app/components/profile/EloPanel";
+import ErrorPage from "@/utils/ErrorPage";
 
 export default function ProfileComponent() {
   const { profileId } = useParams()
@@ -35,20 +36,21 @@ export default function ProfileComponent() {
       nick: string;
       role: string;
       points: string;
+      heal: string;
       damage: string;
       maxPercentage: string;
       maxDps: string;
     }[]
   }
 
- // const dpsRoles = [
- //   "X-Bow",
- //   "Raiz Férrea DPS",
- //   "Raiz Férrea",
- //   "Águia",
- //   "Frost",
- //   "Fire",
- // ];
+  const dpsRoles = [
+    "X-Bow",
+    "Raiz Férrea DPS",
+    "Raiz Férrea",
+   "Águia",
+  "Frost",
+   "Fire",
+  ];
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,14 +72,7 @@ export default function ProfileComponent() {
   console.log(profile);
   
 
-  const bannerUrl = profile?.user.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
-
-  const achievements = [
-    { icon: <Trophy className="w-4 h-4" />, name: "1", color: "from-yellow-500 to-yellow-700" },
-    { icon: <Sword className="w-4 h-4" />, name: "2", color: "from-red-500 to-red-700" },
-    { icon: <Shield className="w-4 h-4" />, name: "3", color: "from-indigo-500 to-indigo-700" },
-    { icon: <Zap className="w-4 h-4" />, name: "4", color: "from-green-500 to-green-700" },
-  ];
+  const bannerUrl = profile?.user?.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
 
   const getRoleIcon = (role: string) => roles.find((r) => r.value === role)?.icon;
 
@@ -92,7 +87,10 @@ export default function ProfileComponent() {
     });
   };
 
-  const nicknamenormalized = profile?.user.name?.charAt(0).toUpperCase() + profile?.user.name?.slice(1);
+  const nicknamenormalized = profile?.user?.name?.charAt(0).toUpperCase() + profile?.user?.name?.slice(1);
+
+  console.log(profile?.lastFiveDungeons);
+  
 
   return (
     <div className="min-h-screen bg-[#1A1A1A] text-gray-200">
@@ -116,7 +114,7 @@ export default function ProfileComponent() {
             <div className="absolute -bottom-16 left-8">
               <div className="p-1 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full shadow-lg">
                 <Image 
-                  src={profile?.user.image || "/chiqueirinhologo.webp"} 
+                  src={profile?.user?.image || "/chiqueirinhologo.webp"} 
                   width={140} 
                   height={140} 
                   alt="Avatar" 
@@ -132,22 +130,9 @@ export default function ProfileComponent() {
                 <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
                   {nicknamenormalized || "Unknown Adventurer"}
                 </h1>
-                  <p className="text-gray-400 text-sm">Pontos totais: {profile?.highestStats.totalPoints}</p>
+                  <p className="text-gray-400 text-sm">Pontos totais: {profile?.highestStats?.totalPoints}</p>
                 </div>
-                <p className="text-gray-400 text-base">@{profile?.user.username || "username"}</p>
-              </div>
-              <div className="bg-[#141414] rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-[#111111]">
-                <h2 className="text-lg font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Conquistas</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {achievements.map((achievement, index) => (
-                    <div key={index} className="flex flex-col items-center group">
-                      <div className={`bg-gradient-to-br ${achievement.color} rounded-xl p-3 mb-2 transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                        {achievement.icon}
-                      </div>
-                      <span className="text-sm font-medium">{achievement.name}</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-400 text-base">@{profile?.user?.username || "username"}</p>
               </div>
               <div className="bg-[#141414] rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-[#111111]">
                 <h2 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
@@ -159,6 +144,7 @@ export default function ProfileComponent() {
                       <tr className="text-left border-b border-[#111111]">
                         <th className="pb-2 text-sm font-medium text-gray-400">Data</th>
                         <th className="pb-2 text-sm font-medium text-gray-400">Role</th>
+                        <th className="pb-2 text-sm font-medium text-gray-400">Cura Lançada</th>
                         <th className="pb-2 text-sm font-medium text-gray-400">Dano</th>
                         <th className="pb-2 text-sm font-medium text-gray-400">DPS</th>
                         <th className="pb-2 text-sm font-medium text-gray-400">%</th>
@@ -166,12 +152,12 @@ export default function ProfileComponent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {profile?.lastFiveDungeons.map((dungeon, index) => (
+                      {profile?.lastFiveDungeons?.map((dungeon, index) => (
                         <tr key={index} className="border-b border-[#111111] last:border-0">
                           <td className="py-3 text-sm">
                             <div className="flex items-center">
                               <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                              {formatDate(dungeon.date)}
+                              {formatDate(dungeon?.date)}
                             </div>
                           </td>
                           <td className="py-3">
@@ -186,10 +172,11 @@ export default function ProfileComponent() {
                               <span className="text-sm">{dungeon.role}</span>
                             </div>
                           </td>
-                          <td className="py-3 text-sm">{dungeon.damage}</td>
+                          {dungeon.heal === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.heal).toLocaleString()}</td>}
+                          {dungeon.damage === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.damage).toLocaleString()}</td>}
                           <td className="py-3 text-sm">{dungeon.maxDps}</td>
-                          <td className="py-3 text-sm">{dungeon.maxPercentage}%</td>
-                          <td className="py-3 text-sm flex items-center justify-center">{dungeon.points}</td>
+                          <td className="py-3 text-sm">{dungeon.maxPercentage}</td>
+                          <td className="py-3 text-sm flex items-center justify-center text-green-300">{Math.sign(dungeon.points) >= 0 ? "+" : "-"}{Math.abs(dungeon.points)}</td>
                         </tr>
                       ))}
                     </tbody>
