@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams } from "next/navigation";
-import { Flame, Clock } from 'lucide-react';
+import { Flame, Clock, GamepadIcon } from 'lucide-react';
 import Header from "@/app/components/Header";
 import { useEffect, useState } from "react";
 import Loading from "@/utils/Loading";
@@ -47,9 +47,9 @@ export default function ProfileComponent() {
     "X-Bow",
     "Raiz Férrea DPS",
     "Raiz Férrea",
-   "Águia",
-  "Frost",
-   "Fire",
+    "Águia",
+    "Frost",
+    "Fire",
   ];
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -66,11 +66,6 @@ export default function ProfileComponent() {
     }
     fetchDungeons()
   }, [profileId])    
-  
-  //if (!profile) return <ErrorPage/>
-
-  console.log(profile);
-  
 
   const bannerUrl = profile?.user?.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
 
@@ -89,8 +84,17 @@ export default function ProfileComponent() {
 
   const nicknamenormalized = profile?.user?.name?.charAt(0).toUpperCase() + profile?.user?.name?.slice(1);
 
-  console.log(profile?.lastFiveDungeons);
-  
+  const NoDataMessage = () => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <GamepadIcon className="w-16 h-16 text-gray-500 mb-4 animate-bounce" />
+      <h3 className="text-xl font-semibold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+        Nenhum dado disponível ainda
+      </h3>
+      <p className="text-gray-400 max-w-md">
+        Jogue uma partida para começar a registrar suas estatísticas e histórico de jogos!
+      </p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#1A1A1A] text-gray-200">
@@ -127,10 +131,10 @@ export default function ProfileComponent() {
             <div className="lg:col-span-2 space-y-6">
               <div className="bg-[#141414] rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-[#111111]">
                 <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                  {nicknamenormalized || "Unknown Adventurer"}
-                </h1>
-                  <p className="text-gray-400 text-sm">Pontos totais: {profile?.highestStats?.totalPoints}</p>
+                  <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                    {nicknamenormalized || "Unknown Adventurer"}
+                  </h1>
+                  <p className="text-gray-400 text-sm">Pontos totais: {profile?.highestStats?.totalPoints || 0}</p>
                 </div>
                 <p className="text-gray-400 text-base">@{profile?.user?.username || "username"}</p>
               </div>
@@ -138,50 +142,54 @@ export default function ProfileComponent() {
                 <h2 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
                   Histórico
                 </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left border-b border-[#111111]">
-                        <th className="pb-2 text-sm font-medium text-gray-400">Data</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">Role</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">Cura Lançada</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">Dano</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">DPS</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">%</th>
-                        <th className="pb-2 text-sm font-medium text-gray-400">Pontos</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {profile?.lastFiveDungeons?.map((dungeon, index) => (
-                        <tr key={index} className="border-b border-[#111111] last:border-0">
-                          <td className="py-3 text-sm">
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                              {formatDate(dungeon?.date)}
-                            </div>
-                          </td>
-                          <td className="py-3">
-                            <div className="flex items-center">
-                              <Image 
-                                src={getRoleIcon(dungeon.role) || ""} 
-                                width={20} 
-                                height={20} 
-                                alt={dungeon.role} 
-                                className="mr-2"
-                              />
-                              <span className="text-sm">{dungeon.role}</span>
-                            </div>
-                          </td>
-                          {dungeon.heal === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.heal).toLocaleString()}</td>}
-                          {dungeon.damage === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.damage).toLocaleString()}</td>}
-                          <td className="py-3 text-sm">{dungeon.maxDps}</td>
-                          <td className="py-3 text-sm">{dungeon.maxPercentage}</td>
-                          <td className="py-3 text-sm flex items-center justify-center text-green-300">{Math.sign(dungeon.points) >= 0 ? "+" : "-"}{Math.abs(dungeon.points)}</td>
+                {profile?.lastFiveDungeons?.length ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left border-b border-[#111111]">
+                          <th className="pb-2 text-sm font-medium text-gray-400">Data</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">Role</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">Cura Lançada</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">Dano</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">DPS</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">%</th>
+                          <th className="pb-2 text-sm font-medium text-gray-400">Pontos</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {profile.lastFiveDungeons.map((dungeon, index) => (
+                          <tr key={index} className="border-b border-[#111111] last:border-0">
+                            <td className="py-3 text-sm">
+                              <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                                {formatDate(dungeon?.date)}
+                              </div>
+                            </td>
+                            <td className="py-3">
+                              <div className="flex items-center">
+                                <Image 
+                                  src={getRoleIcon(dungeon.role) || ""} 
+                                  width={20} 
+                                  height={20} 
+                                  alt={dungeon.role} 
+                                  className="mr-2"
+                                />
+                                <span className="text-sm">{dungeon.role}</span>
+                              </div>
+                            </td>
+                            {dungeon.heal === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.heal).toLocaleString()}</td>}
+                            {dungeon.damage === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.damage).toLocaleString()}</td>}
+                            <td className="py-3 text-sm">{dungeon.maxDps}</td>
+                            <td className="py-3 text-sm">{dungeon.maxPercentage}</td>
+                            <td className="py-3 text-sm flex items-center justify-center text-green-300">{Math.sign(dungeon.points) >= 0 ? "+" : "-"}{Math.abs(dungeon.points)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <NoDataMessage />
+                )}
               </div>
             </div>
             <div className="space-y-6">

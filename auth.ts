@@ -15,10 +15,31 @@ interface ProfileInterface {
   nickname: string;
 }
 
+async function fetchWithRetry(url: string, retries = 50, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.message === 'Bot ainda não está pronto') {
+        console.log('Bot ainda não está pronto, tentando novamente...');
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      } else {
+        return data;
+      }
+    } catch (error) {
+      console.error(`Erro na tentativa ${i + 1}:`, error);
+      if (i === retries - 1) throw new Error('O bot não está respondendo após várias tentativas.');
+    }
+  }
+}
+
 async function findOrCreateUser(profile: ProfileInterface) {
   try {
-    const response = await fetch(`http://localhost:8000/users/${profile.id}`);
-    const data = await response.json();
+    console.log(`${process.env.botBackend_Url}/${profile.id}`);
+    
+    const data = await fetchWithRetry(`${process.env.botBackend_Url}users/${profile.id}`);
+
     const nickName = data.nickname.toLowerCase();
 
     if (!nickName) {
@@ -35,8 +56,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
 
     let role = 'user';
 
-    const roleResponse = await fetch(`http://localhost:8000/roles/${profile.id}`);
-    const roleData = await roleResponse.json();
+    const roleData = await fetchWithRetry(`${process.env.botBackend_Url}users/${profile.id}`);
 
     if (Array.isArray(roleData) && roleData.length > 0) {
       for (const roleName of admins) {
@@ -46,9 +66,6 @@ async function findOrCreateUser(profile: ProfileInterface) {
         }
       }
     }
-
-    console.log(user);
-    
 
     if (!user) {
       user = await prisma.users.create({

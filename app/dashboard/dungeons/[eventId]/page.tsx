@@ -14,6 +14,7 @@ import MorList from "@/app/components/party/MorList";
 import MyParty from "@/app/components/party/MyParty";
 import RemoveMorList from "@/app/components/party/RemoveMorList";
 import ErrorPage from "@/utils/ErrorPage";
+import axios from "axios";
 
 interface Role {
   value: string;
@@ -40,6 +41,8 @@ export default function Dungeons() {
   const eventId = params?.eventId as string;
   const [myParty, setMyParty] = useState<MyParty[]>([]);
   const [removeMor, setRemoveMor] = useState<MyParty[]>([]);
+  const [isProcessingAdd, setIsProcessingAdd] = useState(false);
+  const [isProcessingRemove, setIsProcessingRemove] = useState(false);
 
   const handleAddToMyParty = async (playerData: PlayerData) => {
     if (
@@ -54,6 +57,89 @@ export default function Dungeons() {
     }
     setMyParty([...myParty, playerData]);
   };
+
+  async function fetchWithRetry(url: string, options = {}, retries = 50, delay = 2000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await axios(url, options);
+        if (response.status === 200) {
+          return response.data;
+        }
+      } catch (error) {
+        console.error(`Erro na tentativa ${i + 1}:`, error);
+        if (i === retries - 1) throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  
+  async function handleAddMor(players: PlayerData[]) {
+    if (isProcessingAdd) return;
+    setIsProcessingAdd(true);
+  
+    const messageBody: { nickname: string; role: string }[] = players.map((player) => ({
+      nickname: player.nick,
+      role: player.role,
+    }));
+  
+    try {
+      await fetchWithRetry(
+        `https://discord-bot-chiqueirinho.vercel.app/message/1323406607207497738`,
+        {
+          method: 'POST',
+          data: { content: messageBody },
+        },
+        50,
+        2000 
+      );
+      console.log("MOR adicionado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao adicionar MOR:", error);
+    } finally {
+      setTimeout(() => setIsProcessingAdd(false), 5000);
+    }
+  }
+  
+  async function handleRemoveMor(players: PlayerData[]) {
+    if (isProcessingRemove) return;
+    setIsProcessingRemove(true);
+  
+    try {
+      const messages = await fetchWithRetry(
+        `https://discord-bot-chiqueirinho.vercel.app/history/1323406607207497738`,
+        {},
+        50,
+        2000
+      );
+  
+      const playersToRemove = players.map((player) => player.nick.trim());
+      const messageIdsToDelete: { nickname: string; id: string }[] = [];
+  
+      for (const message of messages) {
+        const playerNick = message.cleanContent.match(/@([^\s🔁⛔]+)/);
+        if (playerNick && playersToRemove.includes(playerNick[1])) {
+          messageIdsToDelete.push({ nickname: playerNick[1], id: message.id });
+        }
+      }
+  
+      await fetchWithRetry(
+        `https://discord-bot-chiqueirinho.vercel.app/deleteMessage/1323406607207497738`,
+        {
+          method: 'POST',
+          data: { idList: messageIdsToDelete },
+        },
+        5,
+        2000
+      );
+  
+      console.log("MOR removido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover MOR:", error);
+    } finally {
+      setTimeout(() => setIsProcessingRemove(false), 5000);
+    }
+  }
+  
 
   const fetcher = async (url: string) => {
     const response = await fetch(url);
@@ -248,10 +334,13 @@ export default function Dungeons() {
               <section className="flex flex-col items-center">
                 <h2 className="mb-4 text-2xl font-bold">Lista de M.O.R</h2>
                 <button
-                  className="mb-4 px-2 py-2 border border-gray-300 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-medium"
-                  onClick={() => console.log("adicionar mor")}
+                  className={`mb-4 px-2 py-2 border text-white rounded-lg ${
+                    isProcessingAdd ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={() => handleAddMor(dungeonsDetails[0]?.morList)}
+                  disabled={isProcessingAdd}
                 >
-                  Adicionar M.O.R
+                  {isProcessingAdd ? "Adicionando..." : "Adicionar M.O.R"}
                 </button>
                 <MorList
                   eventId={eventId}
@@ -262,10 +351,13 @@ export default function Dungeons() {
               <section className="flex flex-col items-center">
                 <h2 className="mb-4 text-2xl font-bold">Remover M.O.R</h2>
                 <button
-                  className="mb-4 px-2 py-2 border border-gray-300 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 font-medium"
-                  onClick={() => console.log("remover mor")}
+                  className={`mb-4 px-2 py-2 border text-white rounded-lg ${
+                    isProcessingRemove ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={() => handleRemoveMor(removeMor as PlayerData[])}
+                  disabled={isProcessingRemove}
                 >
-                  Remover M.O.R
+                  {isProcessingRemove ? "Removendo..." : "Remover M.O.R"}
                 </button>
                 <RemoveMorList removeMorList={removeMor} />
               </section>

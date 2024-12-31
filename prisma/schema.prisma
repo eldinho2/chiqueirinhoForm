@@ -35,7 +35,6 @@ model Dungeons {
   creatorName String
   date        DateTime
   morList     Json[]
-  myParty     Json[]
   roles       Json[]
 }
 

@@ -67,7 +67,7 @@ export function RoleProgress({ role, points, ELOS }: RoleProgressProps) {
           <div className="relative w-32 h-2 bg-neutral-700 rounded-full overflow-hidden">
             <div
               style={{ width: `${progress}%` }}
-              className={`absolute top-0 left-0 h-full ${currentElo[1].color} transition-all duration-300`}
+              className={`absolute top-0 left-0 h-full bg-white transition-all duration-300`}
             />
           </div>
           <span className={`flex gap-2 items-center ${currentElo[1].textColor}`}>

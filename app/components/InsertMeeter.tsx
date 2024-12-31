@@ -12,6 +12,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { checkElos } from "@/utils/checkElos";
 
 import { roles as DefaultRoles } from "@/lib/roles";
 
@@ -429,6 +430,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       },
       body: JSON.stringify(data),
     });
+
+    checkElos(data.players);
 
     setIsSaving(false);
     setActiveTab(0);
