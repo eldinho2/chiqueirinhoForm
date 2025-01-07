@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Key } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Swords, Target, Percent, Award, GamepadIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +11,7 @@ import { RoleProgress } from "./RoleProgress";
 import { ELOS } from "@/lib/elos";
 import { motion } from 'framer-motion';
 
-export function EloPanel({ profile }: { profile: Profile }) {
+export function EloPanel({ profile }: { profile: any }) {
   const [eloInfo, setEloInfo] = useState(() => {
     const points = profile?.highestStats?.roleWhithMorePoints?.points;
 
@@ -214,7 +214,7 @@ export function EloPanel({ profile }: { profile: Profile }) {
                 Roles Mais Jogadas
               </h4>
               <div className="space-y-4">
-                {profile?.highestStats?.allPlayersRoles?.map((role) => (
+                {profile?.highestStats?.allPlayersRoles?.map((role: { role: string; points: number; }) => (
                   <RoleProgress
                     key={role?.role}
                     role={role?.role}

@@ -120,8 +120,10 @@ export default function Event() {
   }
 
   useEffect(() => {
-    setNick(session?.user.nick)
-  }, [session?.user.nick])
+    if (session?.user?.nick) {
+      setNick(session.user.nick);
+    }
+  }, [session?.user?.nick]);
 
   if (isLoading) return <div className="min-h-screen flex flex-col items-center justify-center"><Loading /></div>
   if (error) return <div className="text-center text-red-500 p-4">Error: {error}</div>

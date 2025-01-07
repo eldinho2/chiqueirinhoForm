@@ -14,7 +14,7 @@ export function RoleDistribution({ roles, totalPoints }: RoleDistributionProps) 
         <div key={role.role} className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Image 
-              src={ROLES[role.role as keyof typeof ROLES]} 
+              src={ROLES[role.role as keyof typeof ROLES] as any} 
               alt={role.role}
               width={8}
               height={8}

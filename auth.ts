@@ -15,7 +15,8 @@ interface ProfileInterface {
   nickname: string;
 }
 
-async function fetchWithRetry(url: string, options: any, retries: number = 3) {
+async function fetchWithRetry(url: string, options?: RequestInit) {
+  const retries = 50;
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
@@ -24,7 +25,7 @@ async function fetchWithRetry(url: string, options: any, retries: number = 3) {
       }
       console.error(`Erro na tentativa ${i + 1}:`, response.statusText);
     } catch (error) {
-      console.error(`Erro na tentativa ${i + 1}:`, error.message);
+      console.error(`Erro na tentativa ${i + 1}:`, error);
       if (i === retries - 1) {
         throw new Error('O bot não está respondendo após várias tentativas.');
       }
@@ -106,7 +107,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile }: any) {
       console.log('account', account);
       console.log('profile', profile);
       console.log('user', user);
@@ -123,7 +124,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.banner = profile.banner as string ?? '';
           user.email = profile.email as string ?? '';
 
-          const dbProfile = await findOrCreateUser(profile as unknown as ProfileInterface);
+          const dbProfile = await findOrCreateUser(profile as any);
           console.log(dbProfile);
           
           user.role = dbProfile.role;
@@ -151,7 +152,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       session.user = session.user || {};
       session.user.role = String(token.role) || 'user';
       session.user.id = token.id ?? '';

@@ -12,6 +12,7 @@ declare module "next-auth" {
     banner: string;
     pasword: string;
     role: string;
+    nick: string;
   }
 
   interface sesion {
@@ -24,6 +25,7 @@ declare module "next-auth" {
       banner: string;
       pasword: string;
       role: string;
+      nick: string;
     }
   }
 
@@ -36,5 +38,6 @@ declare module "next-auth" {
     banner: string;
     pasword: string;
     role: string;
+    nick: string;
   }
 }

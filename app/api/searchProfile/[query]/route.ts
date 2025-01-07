@@ -3,17 +3,19 @@ import prisma from "@/services/prisma";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { query: string } }
+  context: { params: Promise<{ query: string }> }
 ) {
   try {
-    const { params } = context;
-    const query = params.query?.trim();
+    const { query } = await context.params;
 
-    if (!query || query.length > 30) {
-      return new Response(JSON.stringify({ error: 'Search query must be a non-empty string with max length 30' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    if (typeof query !== 'string' || !query || query.length > 30) {
+      return new Response(
+        JSON.stringify({ error: 'Search query must be a non-empty string with max length 30' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const searchResults = await prisma.users.findMany({
@@ -48,9 +50,13 @@ export async function GET(
     });
   } catch (error) {
     console.error('Erro ao buscar perfis:', error);
-    return new Response(JSON.stringify({ error: 'Um erro ocorreu ao buscar perfis' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: 'Um erro ocorreu ao buscar perfis' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
+

@@ -16,6 +16,7 @@ interface TopPlayerCardProps {
     maxDps: string
     picture: string
     playerData: {
+      highestStats: any
       user: {
         image: string
         highestStats: {
@@ -33,10 +34,12 @@ interface TopPlayerCardProps {
       current: {
         name: string
         icon: string
+        threshold: number
       }
       next: {
         name: string
         icon: string
+        threshold: number
       } | null
       previous: {
         name: string
@@ -98,8 +101,8 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             <div className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</div>
             <div className=" text-zinc-400 flex items-center gap-1">
               <Image
-                src={getRoleIcon(player.playerData.highestStats.mostFrequentRole) || '/chiqueirinhoLogo.webp'}
-                alt={player.playerData.highestStats.mostFrequentRole.role || 'Role'}
+                src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhoLogo.webp'}
+                alt={player.playerData?.highestStats?.mostFrequentRole.role || 'Role'}
                 width={16}
                 height={16}
               />

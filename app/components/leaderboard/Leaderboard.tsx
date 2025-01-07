@@ -13,9 +13,26 @@ const koch = localFont({
   weight: '100',
 });
 
+interface PlayerData {
+  nick: string;
+  role: string;
+  points: number;
+  damage?: number;
+  heal?: number;
+  maxDps?: number;
+  maxPercentage?: number;
+  playerData?: {
+    icon: string;
+    highestStats?: {
+      roleWhithMorePoints?: { points: number; role: string };
+      mostFrequentRole?: { role: string };
+    };
+  };
+}
+
 const Leaderboard = ({ dungeons }: any) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [playersData, setPlayersData] = useState([]);
+  const [playersData, setPlayersData] = useState<PlayerData[]>([]);
   const [loading, setLoading] = useState(true);
 
   const playersPerPage = 10;
@@ -49,12 +66,12 @@ const Leaderboard = ({ dungeons }: any) => {
     };
   }, []);
 
-  const getRoleIcon = useCallback((roleName: any) => {
+  const getRoleIcon = useCallback((roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon || '/chiqueirinhoLogo.webp';
   }, []);
 
-  const fetchPlayerDetails = useCallback(async (player: any) => {
+  const fetchPlayerDetails = useCallback(async (player: PlayerData) => {
     try {
       const { nick } = player;
       const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
@@ -73,8 +90,8 @@ const Leaderboard = ({ dungeons }: any) => {
     setLoading(true);
     try {
       const sortedPlayers = processPlayerStats(dungeons);
-      const playerData = await Promise.all(sortedPlayers.map(fetchPlayerDetails));
-      setPlayersData(playerData);
+      const playerData = await Promise.all(sortedPlayers.map(fetchPlayerDetails as any));
+      setPlayersData(playerData as any);
     } finally {
       setLoading(false);
     }
@@ -123,7 +140,7 @@ const Leaderboard = ({ dungeons }: any) => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
               {topPlayers.map((player, index) => (
-                <TopPlayerCard key={player.nick} rank={index + 1} player={player} />
+                <TopPlayerCard key={player.nick} rank={index + 1} player={player as any} />
               ))}
             </div>
 

@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 import prisma from "@/services/prisma";
+
+type JsonValue = string | number | boolean | { [key: string]: JsonValue } | JsonValue[];
 
 interface PlayerData {
   nick: string;
@@ -18,14 +20,18 @@ interface Role {
 
 interface Dungeon {
   eventId: string;
-  roles: Role[];
+  roles: JsonValue[];
+}
+
+function isValidRoleArray(data: JsonValue[]): data is Role[] {
+  return data.every(item => typeof item === "object" && item !== null);
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
   const { eventId, playerData }: { eventId: string; playerData: PlayerData } = body;
 
-  const dungeon: Dungeon | null = await prisma.dungeons.findUnique({
+  const dungeon: Dungeon | any = await prisma.dungeons.findUnique({
     where: { eventId: eventId }
   });
 
@@ -33,7 +39,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Evento não encontrado" }, { status: 404 });
   }
 
-  const updatedRoles = dungeon.roles.map(role => {
+  if (!isValidRoleArray(dungeon.roles)) {
+    return NextResponse.json({ error: "Formato inválido em roles" }, { status: 500 });
+  }
+
+  const updatedRoles = dungeon.roles.map((role: { [x: string]: any; }) => {
     const roleKey = Object.keys(role)[0];
     if (role[roleKey].nick === playerData.nick && role[roleKey].ip === playerData.ip) {
       return { [playerData.newRole]: { ...role[roleKey], nick: playerData.newNick } };

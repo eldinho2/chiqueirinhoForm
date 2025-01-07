@@ -3,6 +3,24 @@ import prisma from "@/services/prisma";
 import { NextRequest } from 'next/server';
 import { calculateHighestStats } from "@/utils/calculateMaxStats";
 
+type Player = {
+  nick: string;
+  role?: string;
+  points?: number;
+  damage?: number;
+  heal?: number;
+  maxDps?: number;
+  maxPercentage?: number;
+};
+
+function isValidPlayer(player: any): player is Player {
+  return (
+    typeof player === "object" &&
+    player !== null &&
+    typeof player.nick === "string"
+  );
+}
+
 export async function GET(request: NextRequest) {
   try {
     const profileId = request.nextUrl.pathname.split('/').pop() || '';
@@ -28,10 +46,13 @@ export async function GET(request: NextRequest) {
 
     allDungeons.forEach(dungeon => {
       const players = dungeon.players.filter((player: any) => {
+        if (!isValidPlayer(player)) return false;
         return player.nick.toLowerCase() === user.name.toLowerCase();
       });
 
       players.forEach(player => {
+        if (!isValidPlayer(player)) return;
+
         participacoes.push({
           nick: player.nick,
           role: player.role,
@@ -54,9 +75,9 @@ export async function GET(request: NextRequest) {
         });
       });
     });
-    
+
     const lastFiveDungeons = dungeonHistory.slice(0, 5);
-    
+
     const highestStats = calculateHighestStats(participacoes);
 
     return NextResponse.json({ user, highestStats, lastFiveDungeons });

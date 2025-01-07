@@ -30,6 +30,7 @@ export default function ProfileComponent() {
       highestDamage: number;
       highestDps: number;
       highestMaxPercentage: number;
+      totalPoints: number;
     },
     lastFiveDungeons: {
       date: string;
@@ -85,7 +86,7 @@ export default function ProfileComponent() {
     });
   };
 
-  const nicknamenormalized = profile?.user?.name?.charAt(0).toUpperCase() + profile?.user?.name?.slice(1);
+  const nicknamenormalized = profile?.user?.name?.charAt(0).toUpperCase() as any + profile?.user?.name?.slice(1);
 
   const NoDataMessage = () => (
     <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -184,7 +185,7 @@ export default function ProfileComponent() {
                             {dungeon.damage === "0" ? <td className="py-3 text-sm">0</td> : <td className="py-3 text-sm">{parseInt(dungeon.damage).toLocaleString()}</td>}
                             <td className="py-3 text-sm">{dungeon.maxDps}</td>
                             <td className="py-3 text-sm">{dungeon.maxPercentage}</td>
-                            <td className="py-3 text-sm flex items-center justify-center text-green-300">{Math.sign(dungeon.points) >= 0 ? "+" : "-"}{Math.abs(dungeon.points)}</td>
+                            <td className="py-3 text-sm flex items-center justify-center text-green-300">{Math.sign(dungeon.points as any) >= 0 ? "+" : "-"}{Math.abs(dungeon.points as any)}</td>
                           </tr>
                         ))}
                       </tbody>
