@@ -81,10 +81,10 @@ export default function Dungeons() {
       nickname: player.nick,
       role: player.role,
     }));
-  
+    
     try {
       await fetchWithRetry(
-        `https://discord-bot-chiqueirinho.vercel.app/message/1323406607207497738`,
+        `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/message/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
         {
           method: 'POST',
           data: { content: messageBody },
@@ -106,7 +106,7 @@ export default function Dungeons() {
   
     try {
       const messages = await fetchWithRetry(
-        `https://discord-bot-chiqueirinho.vercel.app/history/1323406607207497738`,
+        `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/history/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
         {},
         50,
         2000
@@ -115,15 +115,25 @@ export default function Dungeons() {
       const playersToRemove = players.map((player) => player.nick.trim());
       const messageIdsToDelete: { nickname: string; id: string }[] = [];
   
+      console.log("messages", messages);
+      console.log("playersToRemove", playersToRemove);
+  
       for (const message of messages) {
-        const playerNick = message.cleanContent.match(/@([^\s🔁⛔]+)/);
-        if (playerNick && playersToRemove.includes(playerNick[1])) {
-          messageIdsToDelete.push({ nickname: playerNick[1], id: message.id });
+        // Verificar se algum nickname está presente na mensagem
+        const playerNick = playersToRemove.find((nick) =>
+          message.cleanContent.includes(nick)
+        );
+  
+        if (playerNick) {
+          messageIdsToDelete.push({ nickname: playerNick, id: message.id });
         }
       }
   
+      console.log("messageIdsToDelete", messageIdsToDelete);
+
+  
       await fetchWithRetry(
-        `https://discord-bot-chiqueirinho.vercel.app/deleteMessage/1323406607207497738`,
+        `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/deleteMessage/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
         {
           method: 'POST',
           data: { idList: messageIdsToDelete },

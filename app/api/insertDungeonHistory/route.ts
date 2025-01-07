@@ -6,8 +6,6 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        console.log("Payload recebido:", body);
-
         const { dungeon, eventId, players } = body;
 
         if (!dungeon || !eventId || !Array.isArray(players) || players.length === 0) {
@@ -28,8 +26,6 @@ export async function POST(request: Request) {
             );
         }
 
-        console.log("Jogadores válidos:", players);
-
         const existingPlayers = await prisma.users.findMany({
             where: {
                 name: { in: players.map(player => player.nick.toLowerCase()) },
@@ -39,8 +35,6 @@ export async function POST(request: Request) {
 
         const existingPlayerNames = new Set(existingPlayers.map(player => player.name.toLowerCase()));
 
-        console.log("Jogadores já cadastrados:", existingPlayerNames);
-
         const newPlayers = players
             .filter(player => !existingPlayerNames.has(player.nick.toLowerCase()))
             .map(player => ({
@@ -49,8 +43,6 @@ export async function POST(request: Request) {
                 role: "user",
                 createdAt: new Date(),
             }));
-
-        console.log("Jogadores novos a serem criados:", newPlayers);
 
         if (newPlayers.length > 0) {
             await prisma.users.createMany({ data: newPlayers });

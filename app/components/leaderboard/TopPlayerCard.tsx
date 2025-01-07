@@ -167,10 +167,10 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
       <div className="flex justify-between items-center mt-2 text-xs">
         <div className="flex items-center gap-1 text-zinc-400">
           <ChevronDown className="w-4 h-4" />
-          <span>{player.eloInfo.previous ? player.eloInfo.current.name : 'N/A'} {player.eloInfo.current?.icon} {player.eloInfo.current.threshold ? player.eloInfo.current.threshold : 'N/A'}</span>
+          <span>{player.eloInfo.previous ? player.eloInfo.current.name : 'N/A'} {player.eloInfo.current?.icon} {player.eloInfo.current?.threshold ? player.eloInfo.current?.threshold : 'N/A'}</span>
         </div>
         <div className="flex items-center gap-1 text-zinc-400">
-          <span>{player.eloInfo.next ? player.eloInfo.next.name : 'Max'} {player.eloInfo.next?.icon} {player.eloInfo.next.threshold ? player.eloInfo.next.threshold : 'N/A'}</span>
+          <span>{player.eloInfo.next ? player.eloInfo.next.name : 'Max'} {player.eloInfo.next?.icon} {player.eloInfo.next?.threshold ? player.eloInfo.next?.threshold : 'N/A'}</span>
           <ChevronUp className="w-4 h-4" />
         </div>
       </div>

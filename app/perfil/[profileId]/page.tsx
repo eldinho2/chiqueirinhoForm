@@ -67,6 +67,9 @@ export default function ProfileComponent() {
     fetchDungeons()
   }, [profileId])    
 
+  console.log(profile);
+  
+
   const bannerUrl = profile?.user?.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
 
   const getRoleIcon = (role: string) => roles.find((r) => r.value === role)?.icon;

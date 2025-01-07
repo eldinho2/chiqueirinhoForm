@@ -214,7 +214,7 @@ export function EloPanel({ profile }: { profile: Profile }) {
                 Roles Mais Jogadas
               </h4>
               <div className="space-y-4">
-                {profile?.highestStats?.rolesWithPoints?.map((role) => (
+                {profile?.highestStats?.allPlayersRoles?.map((role) => (
                   <RoleProgress
                     key={role?.role}
                     role={role?.role}

@@ -17,6 +17,8 @@ export const roles = [
   "Scout",
 ]
 
+import { ELOS as elos } from '@/lib/elos';
+
 export function calculateHighestStats(participacoes) {
   let highestDamage = 0;
   let highestMaxDps = 0;
@@ -64,9 +66,19 @@ export function calculateHighestStats(participacoes) {
     }
   }
 
-  const rolesWithPoints = Object.entries(rolePoints).map(([role, points]) => ({
+
+  const getEloByPoints = (points) => {
+    const sortedElos = Object.values(elos).sort((a, b) => b.threshold - a.threshold);
+  
+    const playerElo = sortedElos.find(elo => points >= elo.threshold);
+  
+    return playerElo || elos.semElo;
+  };
+
+  const allPlayersRoles = Object.entries(rolePoints).map(([role, points, elo]) => ({
     role,
-    points
+    points,
+    elo: getEloByPoints(points)
   }));
 
   return {
@@ -74,9 +86,9 @@ export function calculateHighestStats(participacoes) {
     highestMaxDps,
     highestMaxPercentage,
     mostFrequentRole,
-    roleWhithMorePoints: rolesWithPoints.sort((a, b) => b.points - a.points)[0],
+    roleWhithMorePoints: allPlayersRoles.sort((a, b) => b.points - a.points)[0],
     totalParticipations,
     totalPoints,
-    rolesWithPoints
+    allPlayersRoles
   };
 }

@@ -15,31 +15,31 @@ interface ProfileInterface {
   nickname: string;
 }
 
-async function fetchWithRetry(url: string, retries = 50, delay = 2000) {
+async function fetchWithRetry(url: string, options: any, retries: number = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.message === 'Bot ainda não está pronto') {
-        console.log('Bot ainda não está pronto, tentando novamente...');
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      } else {
-        return data;
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return await response.json();
       }
+      console.error(`Erro na tentativa ${i + 1}:`, response.statusText);
     } catch (error) {
-      console.error(`Erro na tentativa ${i + 1}:`, error);
-      if (i === retries - 1) throw new Error('O bot não está respondendo após várias tentativas.');
+      console.error(`Erro na tentativa ${i + 1}:`, error.message);
+      if (i === retries - 1) {
+        throw new Error('O bot não está respondendo após várias tentativas.');
+      }
     }
   }
 }
 
-async function findOrCreateUser(profile: ProfileInterface) {
-  try {
-    console.log(`${process.env.botBackend_Url}/${profile.id}`);
-    
-    const data = await fetchWithRetry(`${process.env.botBackend_Url}users/${profile.id}`);
 
+
+async function findOrCreateUser(profile: ProfileInterface) {
+  try {    
+    const data = await fetchWithRetry(`${process.env.botBackend_Url}/users/${profile.id}`);
+
+    console.log('data', data);
+    
     const nickName = data.nickname.toLowerCase();
 
     if (!nickName) {
@@ -56,7 +56,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
 
     let role = 'user';
 
-    const roleData = await fetchWithRetry(`${process.env.botBackend_Url}users/${profile.id}`);
+    const roleData = await fetchWithRetry(`${process.env.botBackend_Url}/users/${profile.id}`);
 
     if (Array.isArray(roleData) && roleData.length > 0) {
       for (const roleName of admins) {
@@ -77,7 +77,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
           nickname: nickName.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
-          role: role,
+          role: role || 'user',
         },
       });
     } else {
@@ -91,7 +91,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
           nickname: nickName.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
-          role: role,
+          role: role || 'user',
         },
       });
     }
@@ -107,6 +107,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('account', account);
+      console.log('profile', profile);
+      console.log('user', user);
+      
       if (account && account.provider === 'discord') {
         if (!profile) {
           console.error('Erro: Profile está vazio ou não foi recebido.');

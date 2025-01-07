@@ -24,7 +24,7 @@ export const ELOS = {
   gold: {
     name: "Ouro",
     icon: "🥇",
-    threshold: 60,
+    threshold: 70,
     color: "bg-yellow-400",
     textColor: "text-yellow-400",
   },

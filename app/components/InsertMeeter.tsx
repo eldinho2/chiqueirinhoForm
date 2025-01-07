@@ -12,9 +12,8 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { checkElos } from "@/utils/checkElos";
-
 import { roles as DefaultRoles } from "@/lib/roles";
+import eloService from "@/utils/eloService";
 
 interface Player {
   nick: string;
@@ -92,7 +91,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       const checkJson = await check.json();
 
       if (checkJson.cadastrada) {
-        setAlreadyHasHistory(true);
+        setAlreadyHasHistory(false); //true
         return;
       }
     }
@@ -431,12 +430,12 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       body: JSON.stringify(data),
     });
 
-    checkElos(data.players);
+    eloService(formatedData);
 
     setIsSaving(false);
     setActiveTab(0);
     setIsDialogOpen(false);
-    setAlreadyHasHistory(true);
+    setAlreadyHasHistory(false); //true
   };
 
   const fadeIn = {
@@ -626,6 +625,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                           <input
                             type="number"
                             max={2}
+                            min={-2}
                             value={
                               scoreOverride[`${player.nick}-${index}`] ??
                               player.points.toString()
