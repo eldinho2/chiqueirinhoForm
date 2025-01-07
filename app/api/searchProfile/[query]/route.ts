@@ -3,9 +3,10 @@ import prisma from "@/services/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { query: string } }
+  context: { params: { query: string } }
 ) {
   try {
+    const { params } = context;
     const query = params.query;
 
     if (!query) {
@@ -51,11 +52,10 @@ export async function GET(
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('m erro ocorreu ao buscar perfis:', error);
+    console.error('Um erro ocorreu ao buscar perfis:', error);
     return new Response(JSON.stringify({ error: 'Um erro ocorreu ao buscar perfis' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 }
-
