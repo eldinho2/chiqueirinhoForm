@@ -5,11 +5,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { eventId, roleData } = body
 
-    console.log(body);
-
     const mainTank = roleData[0].MainTank
-
-    console.log(mainTank);
     
     const dungeon = await prisma.dungeons.findUnique({
         where: { eventId: eventId }

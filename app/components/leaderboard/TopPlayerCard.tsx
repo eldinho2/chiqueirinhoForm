@@ -91,7 +91,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
       <div className="flex items-center gap-4 mt-4">
         <div className="flex-1 flex items-center gap-3">
           <Image 
-            src={player.playerData.user.image || '/chiqueirinhoLogo.webp'}
+            src={player.playerData.user.image || '/chiqueirinhologo.webp'}
             alt={player.nick || 'Player'}
             width={48}
             height={48}
@@ -101,7 +101,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             <div className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</div>
             <div className=" text-zinc-400 flex items-center gap-1">
               <Image
-                src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhoLogo.webp'}
+                src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhologo.webp'}
                 alt={player.playerData?.highestStats?.mostFrequentRole.role || 'Role'}
                 width={16}
                 height={16}

@@ -1,7 +1,5 @@
 import NextAuth from "next-auth";
 
-console.log(NextAuth);
-
 declare module "next-auth" {
   interface User extends DefaultUser {
     userID: string;

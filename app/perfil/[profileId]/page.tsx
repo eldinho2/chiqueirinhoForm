@@ -66,10 +66,7 @@ export default function ProfileComponent() {
       }
     }
     fetchDungeons()
-  }, [profileId])    
-
-  console.log(profile);
-  
+  }, [profileId])      
 
   const bannerUrl = profile?.user?.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
 

@@ -92,7 +92,6 @@ export default function Dungeons() {
         50,
         2000 
       );
-      console.log("MOR adicionado com sucesso!");
     } catch (error) {
       console.error("Erro ao adicionar MOR:", error);
     } finally {
@@ -115,9 +114,6 @@ export default function Dungeons() {
       const playersToRemove = players.map((player) => player.nick.trim());
       const messageIdsToDelete: { nickname: string; id: string }[] = [];
   
-      console.log("messages", messages);
-      console.log("playersToRemove", playersToRemove);
-  
       for (const message of messages) {
         // Verificar se algum nickname está presente na mensagem
         const playerNick = playersToRemove.find((nick) =>
@@ -129,9 +125,6 @@ export default function Dungeons() {
         }
       }
   
-      console.log("messageIdsToDelete", messageIdsToDelete);
-
-  
       await fetchWithRetry(
         `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/deleteMessage/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
         {
@@ -142,7 +135,6 @@ export default function Dungeons() {
         2000
       );
   
-      console.log("MOR removido com sucesso!");
     } catch (error) {
       console.error("Erro ao remover MOR:", error);
     } finally {

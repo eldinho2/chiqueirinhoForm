@@ -38,8 +38,6 @@ async function fetchWithRetry(url: string, options?: RequestInit) {
 async function findOrCreateUser(profile: ProfileInterface) {
   try {    
     const data = await fetchWithRetry(`${process.env.botBackend_Url}/users/${profile.id}`);
-
-    console.log('data', data);
     
     const nickName = data.nickname.toLowerCase();
 
@@ -125,7 +123,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.email = profile.email as string ?? '';
 
           const dbProfile = await findOrCreateUser(profile as any);
-          console.log(dbProfile);
           
           user.role = dbProfile.role;
           user.nickname = dbProfile.nickname;

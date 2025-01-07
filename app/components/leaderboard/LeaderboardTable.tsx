@@ -18,8 +18,6 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   onPageChange,
 }) => {
 
-  console.log(players)
-
   return (
     <div className="mt-8">
       <div className="overflow-x-auto">
@@ -48,7 +46,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 </td>
                 <td className="px-4 py-3 flex items-center gap-3">
                   <Image
-                    src={player.playerData.user.image || '/chiqueirinhoLogo.webp'}
+                    src={player.playerData.user.image || '/chiqueirinhologo.webp'}
                     alt={player.nick || 'Player'} 
                     width={32}
                     height={32}

@@ -68,7 +68,7 @@ const Leaderboard = ({ dungeons }: any) => {
 
   const getRoleIcon = useCallback((roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
-    return role?.icon || '/chiqueirinhoLogo.webp';
+    return role?.icon || '/chiqueirinhologo.webp';
   }, []);
 
   const fetchPlayerDetails = useCallback(async (player: PlayerData) => {
@@ -82,7 +82,7 @@ const Leaderboard = ({ dungeons }: any) => {
 
       return { ...player, playerData };
     } catch {
-      return { ...player, playerData: { icon: '/chiqueirinhoLogo.webp' } };
+      return { ...player, playerData: { icon: '/chiqueirinhologo.webp' } };
     }
   }, []);
 

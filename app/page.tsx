@@ -20,8 +20,6 @@ export default function Home() {
     };
     fetchWeekData();
   }, []);
-
-  //console.log(weekData);
   
   
 

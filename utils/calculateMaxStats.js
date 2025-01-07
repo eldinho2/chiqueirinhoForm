@@ -29,9 +29,7 @@ export function calculateHighestStats(participacoes) {
 
   let rolePoints = {};
 
-  participacoes.forEach((participacao) => {
-    //console.log(participacao);
-    
+  participacoes.forEach((participacao) => {    
     totalParticipations++;
 
     totalPoints += participacao.points;

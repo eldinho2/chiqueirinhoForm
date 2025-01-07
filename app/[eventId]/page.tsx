@@ -47,10 +47,7 @@ const itemVariants = {
 
 export default function Event() {
   const { eventId } = useParams()
-  const { data: session } = useSession()
-
-  console.log(session?.user || {});
-  
+  const { data: session } = useSession()  
 
   const [dungeons, setDungeons] = useState<Dungeons[]>([])
   const [isLoading, setIsLoading] = useState(true)

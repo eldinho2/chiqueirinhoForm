@@ -38,8 +38,6 @@ export default function Dashboard() {
     }
     fetchDungeons()
   }, [])  
-
-  console.log(dungeons);
   
 
   const handleDelete = async (id: string) => {

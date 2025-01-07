@@ -13,8 +13,6 @@ const eloService = async (formatedData: PlayerData[]) => {
     const { nick, role } = player;
 
     try {
-      console.log(`Fetching data for player: ${nick}, role: ${role}`);
-
       const userIdResponse = await fetch(`/api/getUserId/${nick}`);
       if (!userIdResponse.ok) {
         console.error(`Failed to fetch userId for ${nick}: ${userIdResponse.statusText}`);
