@@ -268,6 +268,7 @@ export default function Event() {
           <p>Desenvolvido com ❤️ por luana2</p>
           <div className="flex items-center gap-2 text-xs mt-1">
             <span>Versão 2.0.0</span>
+            <span>•</span>
           </div>
           <p className="mt-2">© {new Date().getFullYear()} Chiqueirinho - Todos os direitos reservados</p>
         </footer>
