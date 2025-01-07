@@ -16,7 +16,7 @@ interface ProfileInterface {
 }
 
 async function fetchWithRetry(url: string, options?: RequestInit) {
-  const retries = 50;
+  const retries = 999;
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
@@ -37,7 +37,10 @@ async function fetchWithRetry(url: string, options?: RequestInit) {
 
 async function findOrCreateUser(profile: ProfileInterface) {
   try {    
-    const data = await fetchWithRetry(`${process.env.botBackend_Url}/users/${profile.id}`);
+    const data = await fetchWithRetry(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/users/${profile.id}`);
+
+    console.log(data);
+    
     
     const nickName = data.nickname.toLowerCase();
 
@@ -55,7 +58,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
 
     let role = 'user';
 
-    const roleData = await fetchWithRetry(`${process.env.botBackend_Url}/users/${profile.id}`);
+    const roleData = await fetchWithRetry(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/users/${profile.id}`);
 
     if (Array.isArray(roleData) && roleData.length > 0) {
       for (const roleName of admins) {
