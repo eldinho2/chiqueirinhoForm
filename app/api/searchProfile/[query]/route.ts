@@ -7,10 +7,10 @@ export async function GET(
 ) {
   try {
     const { params } = context;
-    const query = params.query;
+    const query = params.query?.trim();
 
-    if (!query) {
-      return new Response(JSON.stringify({ error: 'Search query is required' }), {
+    if (!query || query.length > 30) {
+      return new Response(JSON.stringify({ error: 'Search query must be a non-empty string with max length 30' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -33,18 +33,13 @@ export async function GET(
       },
       take: 10,
     });
-    
+
     const sortedResults = searchResults.sort((a, b) => {
-      const aStartsWithName = a.name.toLowerCase().startsWith(query.toLowerCase());
-      const bStartsWithName = b.name.toLowerCase().startsWith(query.toLowerCase());
-      const aStartsWithUsername = a.username?.toLowerCase().startsWith(query.toLowerCase());
-      const bStartsWithUsername = b.username?.toLowerCase().startsWith(query.toLowerCase());
-      
-      if (aStartsWithName && !bStartsWithName) return -1;
-      if (!aStartsWithName && bStartsWithName) return 1;
-      if (aStartsWithUsername && !bStartsWithUsername) return -1;
-      if (!aStartsWithUsername && bStartsWithUsername) return 1;
-      return 0;
+      const aPriority = a.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
+                        a.username?.toLowerCase().startsWith(query.toLowerCase()) ? 2 : 3;
+      const bPriority = b.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
+                        b.username?.toLowerCase().startsWith(query.toLowerCase()) ? 2 : 3;
+      return aPriority - bPriority;
     });
 
     return new Response(JSON.stringify(sortedResults), {
@@ -52,7 +47,7 @@ export async function GET(
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Um erro ocorreu ao buscar perfis:', error);
+    console.error('Erro ao buscar perfis:', error);
     return new Response(JSON.stringify({ error: 'Um erro ocorreu ao buscar perfis' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
