@@ -15,8 +15,14 @@ datasource db {
 
 model Users {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  username  String   @unique
-  password  String
+  userID    String   @unique
+  username  String?
+  email     String?
+  name      String   @unique
+  nickname  String?
+  image     String?
+  banner    String?
+  password  String?
   role      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,5 +36,13 @@ model Dungeons {
   date        DateTime
   morList     Json[]
   roles       Json[]
+}
+
+model DungeonsHistory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  dungeon   String
+  eventId   String   @unique
+  players   Json[]
+  createdAt DateTime @default(now())
 }
 

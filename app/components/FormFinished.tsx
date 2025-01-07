@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { useState } from "react"
+import Link from "next/link"
 
 export default function FormFinished() {
   const [copied, setCopied] = useState(false)
@@ -28,7 +29,9 @@ export default function FormFinished() {
           whileHover={{ rotate: 360 }}
           transition={{ duration: 0.5 }}
         >
-          <Image className="rounded-full" src="/chiqueirinhologo.webp" alt="Logo" width={100} height={100} />
+          <Link href="/">
+            <Image className="rounded-full" src="/chiqueirinhologo.webp" alt="Logo" width={100} height={100} />
+          </Link>
         </motion.div>
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -94,7 +97,7 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Desktop:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="https://cdn.discordapp.com/attachments/616035988518600704/1305637545127710740/image.png?ex=6733c138&is=67326fb8&hm=60d2948afba52034edb0c63e6446dd500dcd76625016079ecb6d00689ba659e2&" 
+                src="/formfinished1.png" 
                 alt="Desktop" 
                 width={340} 
                 height={340} 
@@ -104,7 +107,7 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Mobile:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="https://cdn.discordapp.com/attachments/616035988518600704/1303856119105458236/Sem_titulo.png?ex=673334e3&is=6731e363&hm=bd8870328a4b3cc4746e3b781ca702d7629e906f416620d4461bbbf225b7d0c3&" 
+                src="/formfinished2.png" 
                 alt="Mobile" 
                 width={340} 
                 height={340} 

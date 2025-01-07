@@ -18,6 +18,7 @@ export default function Dashboard() {
     name: string
     description: string
     date: string
+    roles: string[]
   }
 
   const [dungeons, setDungeons] = useState<Dungeon[]>([])
@@ -38,6 +39,8 @@ export default function Dashboard() {
     fetchDungeons()
   }, [])  
 
+  console.log(dungeons);
+  
 
   const handleDelete = async (id: string) => {
     const response = await fetch(`/api/deleteDungeon`, {
@@ -73,15 +76,13 @@ export default function Dashboard() {
       description: "O link foi copiado para sua área de transferência.",
     });
     setTimeout(() => setCopiedId(null), 2000);
-  };
-  
-  console.log(dungeons) 
+  };  
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
+    <div>
       <Toaster />
       <Header />
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex justify-between items-center mb-12 max-w-7xl mx-auto">
         <h1 className="text-5xl py-2 font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
           Dungeons
         </h1>
@@ -93,7 +94,7 @@ export default function Dashboard() {
         </Button>
       </div>
       {isLoading && <Loading />}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
         {dungeons.map((dungeon) => (
           <Card 
             key={dungeon.id} 
@@ -112,7 +113,7 @@ export default function Dashboard() {
                 </CardTitle>
               </div>
               <CardDescription className="text-sm text-gray-400">
-                {dungeon.creatorName}
+                {`${dungeon.creatorName} (${dungeon.roles.length} jogadores)`}
               </CardDescription>
               <CardDescription className="text-sm text-gray-400">
                 {new Date(dungeon.date).toLocaleDateString('pt-BR') + " às " + new Date(dungeon.date).toLocaleTimeString('pt-BR')}
