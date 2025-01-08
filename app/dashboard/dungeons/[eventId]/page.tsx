@@ -112,13 +112,12 @@ export default function Dungeons() {
       );
   
       const playersToRemove = players.map((player) => player.nick.trim());
-      const messageIdsToDelete: { nickname: string; id: string }[] = [];
-  
+      const messageIdsToDelete: { nickname: string; id: string }[] = [];      
+      
       for (const message of messages) {
-        // Verificar se algum nickname está presente na mensagem
         const playerNick = playersToRemove.find((nick) =>
-          message.cleanContent.includes(nick)
-        );
+          message.cleanContent.toLowerCase().includes(nick.toLowerCase().trim())
+      );
   
         if (playerNick) {
           messageIdsToDelete.push({ nickname: playerNick, id: message.id });
