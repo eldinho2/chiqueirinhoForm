@@ -1,1 +1,1 @@
-export  const admins = ['Leitão 🤴🏻', 'Administrador', 'CALLER', 'Ajudante ‍⚖️'];
+export  const admins = ['Leitão 🤴🏻', 'Administrador', 'CALLER', 'Ajudante ‍⚖️', 'Creative Manager' ];

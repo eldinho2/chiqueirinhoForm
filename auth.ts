@@ -39,8 +39,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
   try {    
     const data = await fetchWithRetry(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/users/${profile.id}`);
 
-    console.log(data);
-    
+    console.log('=========================data', data);
     
     const nickName = data.nickname.toLowerCase();
 
@@ -56,16 +55,14 @@ async function findOrCreateUser(profile: ProfileInterface) {
       where: { name: nickName },
     });
 
-    let role = 'user';
+    let role: string | null = null;
 
-    const roleData = await fetchWithRetry(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/users/${profile.id}`);
-
-    if (Array.isArray(roleData) && roleData.length > 0) {
-      for (const roleName of admins) {
-        if (roleData.includes(roleName)) {
-          role = roleName;
-          break;
-        }
+    const userRoles = data.roles;
+    
+    for (const admin of admins) {
+      if (userRoles.includes(admin)) {
+        role = admin;
+        break;
       }
     }
 

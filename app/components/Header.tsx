@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
+import { admins } from '@/lib/admins'
+
+
 interface SearchResult {
   userID: string;
   name: string;
@@ -111,6 +114,9 @@ export default function Header() {
     return null;
   }
 
+  console.log(session);
+  
+
   return (
     <header className="bg-[#2A2A2A] border-b border-[#3A3A3A] text-white">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -169,9 +175,8 @@ export default function Header() {
             </div>
           )}
         </div>
-
         <div className="flex items-center gap-4">
-          {session?.user?.email === "viniciusfod@gmail.com" && (
+          {admins.includes(session?.user?.role as any) && (
             <Link href="/dashboard">
               <Button variant="ghost" size="sm" className="text-white">
                 <LayoutDashboard className="w-4 h-4 mr-2" />

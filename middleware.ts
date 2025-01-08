@@ -1,22 +1,24 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { admins } from "./lib/admins";
 
 export async function middleware(request: NextRequest) {
   const session = await auth();
-  const role = session?.user?.email;
+  const role = session?.user?.role || "user";
 
   const currentPath = request.nextUrl.pathname;
-  
+
   if (currentPath === "/login") {
     if (session) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
-  if (currentPath === "/dashboard") {
-    if (role !== "viniciusfod@gmail.com") {
-      return NextResponse.redirect(new URL("/", request.url));
+
+  if (currentPath.startsWith("/dashboard")) {
+    if (!session || !admins.includes(role)) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
 
