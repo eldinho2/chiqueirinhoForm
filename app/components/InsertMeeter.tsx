@@ -372,9 +372,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
   const handleClearDungeon = async() => {
     const role = dungeon[0].roles
-    const eventId = dungeon[0].eventId
-    console.log(role);
-    
+    const eventId = dungeon[0].eventId    
 
     await fetch("/api/clearDungeon", {
       method: "POST",

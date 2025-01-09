@@ -301,9 +301,7 @@ export default function Dungeons() {
   };
 
   const handleClearDungeon = async () => {
-    const role = dungeonsDetails[0].roles
-    console.log(role);
-    
+    const role = dungeonsDetails[0].roles    
 
     await fetch("/api/clearDungeon", {
       method: "POST",
