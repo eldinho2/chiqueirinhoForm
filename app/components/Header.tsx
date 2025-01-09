@@ -197,7 +197,14 @@ export default function Header() {
                     className="rounded-full"
                   />
                 ) : (
-                  <User className="w-8 h-8 p-1 rounded-full bg-[#3A3A3A]" />
+                    <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogin}
+                    className="text-white"
+                  >
+                    Entrar
+                  </Button>
                 )}
                 <Button variant="ghost" size="sm" className="text-white">
                   Perfil
