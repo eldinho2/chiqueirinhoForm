@@ -120,12 +120,10 @@ const Leaderboard = ({ dungeons }: any) => {
     return { topPlayers, remainingPlayers, totalPages, currentPlayers };
   }, [playersData, getEloInfo, getRoleIcon, currentPage]);
 
-  if (!currentPlayers.length) return <div>nada aqui</div>;
-  
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
       {loading ? (
-        <div className="flex justify-center items-center h-full">
+        <div className="mx-auto">
           <Loading />
         </div>
       ) : (
