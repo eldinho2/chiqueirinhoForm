@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { roles as DefaultRoles } from "@/lib/roles";
 import eloService from "@/utils/eloService";
+import { v4 as uuidv4 } from 'uuid';
 
 interface Player {
   nick: string;
@@ -62,8 +63,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     { general: "", healers: "" },
   ]);
   const [presentRolesDGs, setPresentRolesDGs] = useState<Player[][]>([[], []]);
-
-  const [alreadyHasHistory, setAlreadyHasHistory] = useState(false);
   const [warningWasRead, setWarningWasRead] = useState(false);
   const [, setMissingRolesDGs] = useState<RoleNickPair[][]>([[], []]);
   const [combinedRolesDGs, setCombinedRolesDGs] = useState<Player[][]>([
@@ -78,25 +77,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
-
-  useEffect(() => {
-    const checkIfHistoryCanBeUploaded = async () => {
-      const check = await fetch("/api/checkIfHistoryCanBeUploaded", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventId: dungeon[0].eventId }),
-      });
-      const checkJson = await check.json();
-
-      if (checkJson.cadastrada) {
-        setAlreadyHasHistory(false); //true
-        return;
-      }
-    }
-    checkIfHistoryCanBeUploaded()
-  }, [dungeon]);
 
   const roles = dungeon[0].roles;
 
@@ -194,7 +174,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       .filter(
         ({ nick, role }) =>
           inputNicks.includes(nick.toLowerCase()) &&
-          !["MainTank", "Scout"].includes(role) &&
           !morList.some(
             (morPlayer: { nick: string }) =>
               morPlayer.nick.toLowerCase() === nick.toLowerCase()
@@ -274,7 +253,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     const missing = roleNickPairs.filter(
       ({ nick, role }) =>
         !inputNicks.includes(nick.toLowerCase()) &&
-        !["MainTank", "Scout"].includes(role) &&
         !morList.some(
           (morPlayer: { nick: string }) =>
             morPlayer.nick.toLowerCase() === nick.toLowerCase()
@@ -392,6 +370,21 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     return Array.from(allPlayers.values());
   };
 
+  const handleClearDungeon = async() => {
+    const role = dungeon[0].roles
+    const eventId = dungeon[0].eventId
+    console.log(role);
+    
+
+    await fetch("/api/clearDungeon", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role, eventId }),
+    });
+  }
+
   const handleSave = async () => {
     setIsWarningOpen(true)
 
@@ -413,14 +406,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
     const data = {
       dungeon: dungeon[0].name,
-      eventId: dungeon[0].eventId,
+      eventId: uuidv4(),
       players: formatedData,
     };
-
-    if (alreadyHasHistory) {
-      setIsSaving(false);
-      return;
-    }
 
     await fetch("/api/insertDungeonHistory", {
       method: "POST",
@@ -435,7 +423,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     setIsSaving(false);
     setActiveTab(0);
     setIsDialogOpen(false);
-    setAlreadyHasHistory(false); //true
+    handleClearDungeon();
   };
 
   const fadeIn = {
@@ -447,17 +435,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <motion.button
-            className={`px-6 py-3 font-semibold rounded-lg transition-all ${
-              alreadyHasHistory
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-purple-600 text-white hover:bg-purple-700 active:scale-95"
-            }`}
-            whileHover={{ scale: alreadyHasHistory ? 1 : 1.05 }}
-            whileTap={{ scale: alreadyHasHistory ? 1 : 0.95 }}
-            disabled={alreadyHasHistory}
-          >
-            {alreadyHasHistory ? "Histórico já cadastrado" : "Abrir Inserção"}
+          <motion.button className={"px-6 py-3 font-semibold rounded-lg transition-all bg-purple-600 text-white hover:bg-purple-700 active:scale-95"} >
+            Abrir Inserção
           </motion.button>
         </DialogTrigger>
         <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[900px] overflow-y-auto">
@@ -737,13 +716,34 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       </Dialog>
         <Dialog open={isWarningOpen}>
           <DialogContent className="bg-[#2A2A2A] p-6 rounded-lg w-[400px]">
-            <DialogTitle className="text-xl font-bold text-purple-300 mb-4">
-              Aviso Importante
+            <DialogTitle className="text-xl text-center font-bold text-purple-300 mb-4">
+            ⚠ Aviso Importante ⚠
             </DialogTitle>
-            <p className="text-gray-300 mb-4">
-              A operação de salvar é irreversível. Por favor, confira os dados
-              antes de prosseguir.
-            </p>
+            <motion.div
+      className="text-red-500 p-4 rounded-lg shadow-lg max-w-md mx-auto flex flex-col gap-4"
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <p>
+        A dg será limpa após salvar.
+      </p>
+      <p>
+        Confira os players do meeter e os que participaram da dg.
+      </p>
+      <p>
+        Antes de salvar, verifique se todos os dados estão corretos.
+      </p>
+      <p>
+        A operação de salvar é irreversível.
+      </p>
+      <p>
+        Certifique-se de ter certeza de que deseja realizar essa operação.
+      </p>
+      <p>
+        Caso tenha certeza, clique em "OK" para prosseguir com a operação.
+      </p>
+    </motion.div>
             <div className="flex justify-end">
               <DialogClose
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"

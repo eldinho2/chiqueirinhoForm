@@ -5,6 +5,7 @@ import { Trophy, Swords, Zap, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { roles } from '@/lib/roles'
+import Link from 'next/link'
 
 interface TopPlayerCardProps {
   rank: number
@@ -18,6 +19,7 @@ interface TopPlayerCardProps {
     playerData: {
       highestStats: any
       user: {
+        userID: string
         image: string
         highestStats: {
           roleWhithMorePoints: {
@@ -76,6 +78,9 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
     return role?.icon;
   };
 
+  console.log(player);
+  
+
   return (
     <motion.div 
       className={`relative rounded-lg ${getBackgroundGradient()} border-2 ${getBorderColor()} p-3 flex flex-col gap-4 overflow-hidden`}
@@ -98,7 +103,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             className='rounded-full border-2 border-zinc-700'
           />
           <div>
-            <div className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</div>
+            <Link href={`/perfil/${player.playerData.user?.userID}`} className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</Link>
             <div className=" text-zinc-400 flex items-center gap-1">
               <Image
                 src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhologo.webp'}
@@ -119,7 +124,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             <div className='flex flex-col items-center justify-center'>
               <div className="text-xs text-zinc-400">Elo Atual</div>
               <div className="text-lg font-bold text-zinc-100 flex items-center gap-1">
-                <span>{player.eloInfo.current.name}</span>
+                <span >{player.eloInfo.current.name}</span>
                 <span className=''>{player.eloInfo.current.icon}</span>
               </div>
             </div>

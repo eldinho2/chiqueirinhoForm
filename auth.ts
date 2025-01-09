@@ -3,6 +3,7 @@ import { authConfig } from './auth.config';
 import prisma from './services/prisma';
 import Discord from "next-auth/providers/discord";
 import { admins } from './lib/admins';
+export const maxDuration = 60;
 
 interface ProfileInterface {
   id: string;
@@ -32,8 +33,6 @@ async function fetchWithRetry(url: string, options?: RequestInit) {
     }
   }
 }
-
-
 
 async function findOrCreateUser(profile: ProfileInterface) {
   try {    

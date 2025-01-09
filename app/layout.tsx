@@ -13,7 +13,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Chiqueirinho Form 🐷",
   description: "Formulário do Chiqueirinho - 🐷",
-  keywords: ["formulário", "chiqueirinho", "gerenciamento", "sistema", "chiqueirinho form", "form", "ava form", "ava", "chiqueirinho ava"],
+  keywords: ["formulário", "chiqueirinho", "gerenciamento", "sistema", "chiqueirinho form", "form", "ava form", "ava", "chiqueirinho ava", "albion", 'avalonian albion', 'dungeon', 'ava dungeon'],
   authors: [{ name: "Chiqueirinho" }],
   creator: "Chiqueirinho",
   publisher: "Chiqueirinho",

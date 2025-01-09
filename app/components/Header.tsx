@@ -112,10 +112,7 @@ export default function Header() {
 
   if (isLoading || status === 'loading') {
     return null;
-  }
-
-  console.log(session);
-  
+  }  
 
   return (
     <header className="bg-[#2A2A2A] border-b border-[#3A3A3A] text-white">

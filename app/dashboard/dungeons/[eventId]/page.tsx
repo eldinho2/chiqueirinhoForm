@@ -300,6 +300,20 @@ export default function Dungeons() {
     );
   };
 
+  const handleClearDungeon = async () => {
+    const role = dungeonsDetails[0].roles
+    console.log(role);
+    
+
+    await fetch("/api/clearDungeon", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role, eventId }),
+    });
+  };
+
   return (
     <div className="min-h-screen text-white">
       <Header />
@@ -311,6 +325,7 @@ export default function Dungeons() {
           <span className="my-6 text-sm text-neutral-400">
             {dungeonsDetails[0]?.roles.length} pings
           </span>
+          <button onClick={handleClearDungeon} className="hover:underline hover:text-gray-500">Limpar Dungeon</button>
           <div>
             <InsertMeeter
               dungeon={dungeonsDetails}

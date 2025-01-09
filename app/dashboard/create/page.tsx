@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid'
 export default function CreateDungeonPage() {
   const router = useRouter()
   const { data: session } = useSession()
-  const creatorName = session?.user?.name || ""
+  const creatorName = session?.user?.nick || "maintank";
 
   const [name, setName] = useState("")
 
