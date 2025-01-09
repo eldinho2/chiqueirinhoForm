@@ -739,7 +739,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
         Certifique-se de ter certeza de que deseja realizar essa operação.
       </p>
       <p>
-        Caso tenha certeza, clique em "OK" para prosseguir com a operação.
+        Caso tenha certeza, clique em OK para prosseguir com a operação.
       </p>
     </motion.div>
             <div className="flex justify-end">
