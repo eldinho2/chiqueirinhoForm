@@ -103,7 +103,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
   const extractDPS = (inputText: string, nick: string) => {
     const regex = new RegExp(
-      `${nick}:\\s*(\\d+)\\((\\d+\\.\\d+)%\\)\\|(\\d+\\.\\d+)\\s*DPS`,
+      `${nick}:\\s*(\\d+(?:\\.\\d+)?)\\((\\d+,\\d+)%\\)\\|(\\d+(?:\\.\\d+)?,\\d+)\\s*DPS`,
       "i"
     );
     const match = inputText.match(regex);
@@ -182,6 +182,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           points = 0;
         }
         const dpsData = extractDPS(combinedText, nick);
+        console.log('dpsData', dpsData);
+        
         let heal = extractHPS(combinedText, nick);
         heal = isNaN(parseFloat(heal)) ? "0" : heal;
         return {

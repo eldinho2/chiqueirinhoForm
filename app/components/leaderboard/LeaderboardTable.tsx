@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { Button } from "@/components/ui/button"
 
 interface LeaderboardTableProps {
   players: any[]
@@ -68,36 +69,28 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </table>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => onPageChange(page)}
-              className={`px-3 py-1 rounded-lg ${
-                currentPage === page
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          variant="outline"
+          size="sm"
+          className="border-[#3A3A3A] text-gray-300 hover:bg-[#2A2A2A] hover:text-gray-100"
+        >
+          Anterior
+        </Button>
+        <span className="text-sm text-gray-400">
+          Página {currentPage} de {totalPages}
+        </span>
+        <Button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          variant="outline"
+          size="sm"
+          className="border-[#3A3A3A] text-gray-300 hover:bg-[#2A2A2A] hover:text-gray-100"
+        >
+          Próxima
+        </Button>
       </div>
     </div>
   )
