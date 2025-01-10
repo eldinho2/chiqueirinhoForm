@@ -101,20 +101,17 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     return match ? match[1] : "0";
   };
 
-  const extractDPS = (
-    inputText: string,
-    nick: string
-  ): { total: string; percentage: string; perSecond: string } => {
+  const extractDPS = (inputText: string, nick: string) => {
     const regex = new RegExp(
-      `${nick}:\\s*(\\d+)\\((\\d+,\\d+)%\\)\\|(\\d+,\\d+)\\s*DPS`,
+      `${nick}:\\s*(\\d+)\\((\\d+\\.\\d+)%\\)\\|(\\d+\\.\\d+)\\s*DPS`,
       "i"
     );
     const match = inputText.match(regex);
-
+  
     if (!match) {
       console.warn(`DPS não encontrado para o jogador: ${nick}`);
     }
-
+  
     return match
       ? { total: match[1], percentage: match[2], perSecond: match[3] }
       : { total: "0", percentage: "0%", perSecond: "0" };
@@ -339,11 +336,11 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           role: player.role,
           points: 0,
           damage: "0",
-          percentage: "0%",
+          percentage: "0",
           perSecond: "0",
           heal: "0",
           maxDps: "0",
-          maxPercentage: "0%",
+          maxPercentage: "0",
         });
       }
       const existingPlayer = allPlayers.get(player.nick)!;
