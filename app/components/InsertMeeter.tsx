@@ -418,7 +418,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     setIsSaving(false);
     setActiveTab(0);
     setIsDialogOpen(false);
-    //handleClearDungeon();
+    handleClearDungeon();
   };
 
   const fadeIn = {
