@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @font-face {
   font-family: "Koch";
   src: url("/fonts/Koch Fraktur.ttf.ttf");

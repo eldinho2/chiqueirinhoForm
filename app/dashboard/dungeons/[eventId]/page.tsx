@@ -269,7 +269,7 @@ export default function Dungeons() {
                 <div
                   key={index}
                   onDoubleClick={() => handleAddToMyParty(player)}
-                  className="flex flex-col gap-1 rounded-md bg-neutral-800 p-2 transition-colors hover:bg-neutral-700"
+                  className="flex flex-col gap-1 text-sm rounded-md bg-neutral-800 p-2 transition-colors hover:bg-neutral-700"
                 >
                   <div className="flex items-center">
                     <div className="flex min-w-[60px] items-center gap-3">
@@ -285,7 +285,7 @@ export default function Dungeons() {
                     </div>
                     <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-600 overflow-x-auto whitespace-nowrap">
                       <span
-                        className={`px-2 text-base ${player.hasMor
+                        className={`px-2 text-sm ${player.hasMor
                             ? "text-emerald-400"
                             : "text-neutral-300"
                           }`}
@@ -300,7 +300,7 @@ export default function Dungeons() {
                       alt={`Role icon for ${role.label}`}
                       width={22}
                       height={22}
-                      className="rounded"
+                      className="rounded text-sm"
                     />
                     {player.ip !== "0" && `IP: ${player.ip}`}
                   </div>
@@ -332,7 +332,7 @@ export default function Dungeons() {
   return (
     <div className="min-h-screen text-white">
       <Header />
-      <main className="mx-auto px-4">
+      <main className="mx-auto px-20">
         <div className="flex items-center justify-center gap-4">
           <h1 className="my-8 text-center text-2xl font-bold overflow-hidden">
             {dungeonsDetails[0]?.name || "Loading..."}
