@@ -56,7 +56,6 @@ export default function Event() {
   const [hasUserFinished, setHasUserFinished] = useState(false)
 
   const [selectedRole, setSelectedRole] = useState("")
-  const [hasMor, setHasMor] = useState(false)
   const [hasEquip, setHasEquip] = useState("no")
   const [nick, setNick] = useState("")
   const [ip, setIp] = useState("")
@@ -88,8 +87,6 @@ export default function Event() {
       [selectedRole]: {
         nick: nick,
         ip: ip,
-        hasMor: hasMor,
-        hasEquip: hasMor ? hasEquip : "N/A"
       }
     }
 
@@ -194,37 +191,6 @@ export default function Event() {
               </SelectContent>
             </Select>
           </motion.div>
-
-          <motion.div variants={itemVariants} className="flex flex-col gap-4">
-            <Label>Você possui MOR nesta role?</Label>
-            <RadioGroup defaultValue="no" onValueChange={(value) => setHasMor(value === "yes")}>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="yes" id="morYes" />
-                <Label htmlFor="morYes">Sim</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="no" id="morNo" />
-                <Label htmlFor="morNo">Não</Label>
-              </div>
-            </RadioGroup>
-
-            {hasMor && (
-              <div className="flex flex-col gap-4">
-                <Label>MOR, está usando equipamentos 8.3 Excelente?</Label>
-                <RadioGroup defaultValue="no" onValueChange={setHasEquip}>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="yes" id="equipYes" />
-                    <Label htmlFor="equipYes">Sim</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="no" id="equipNo" />
-                    <Label htmlFor="equipNo">Não</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            )}
-          </motion.div>
-
           <motion.div variants={itemVariants} className="flex flex-col gap-2">
             <Label htmlFor="ip">IP</Label>
             <Input 

@@ -13,6 +13,8 @@ interface RemoveMorListProps {
 }
 
 export default function RemoveMorList({ removeMorList }: RemoveMorListProps) {
+  console.log(removeMorList);
+  
   return (
     <PlayerList>
       {removeMorList?.map((player: Player) => (

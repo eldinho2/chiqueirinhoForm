@@ -47,8 +47,47 @@ export default function Dungeons() {
   const [isProcessingAdd, setIsProcessingAdd] = useState(false);
   const [isProcessingRemove, setIsProcessingRemove] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<string | null>(null);
+  const [fetchPlayersWithMor, setfetchPlayersWithMor] = useState<PlayerData[]>([]);
 
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (messages) {
+      const playerRoleMap: { nick: string; role: string, hasMor: boolean }[] = [];
+  
+      for (const message of messages as any) {
+        // Regex para capturar jogador e role
+        const match = message.cleanContent.match(/@([^\s🔁]+)\s*🔁\s*(.+)/);
+  
+        if (match) {
+          let nick = match[1].trim();
+          let role = match[2].trim();
+  
+          nick = nick.replace(/[^a-zA-Z0-9_-]/g, "");
+          role = role.replace(/[^\p{L}\p{N}\s_-]/gu, "");
+  
+          playerRoleMap.push({ nick, role, hasMor: true });
+        }
+      }
+  
+      setfetchPlayersWithMor(playerRoleMap as any);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const fetchMessage = async () => {
+      const response = await fetchWithRetry(
+        `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/history/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
+        {},
+        50,
+        2000
+      );
+      setMessages(response);      
+    }
+    
+    fetchMessage()
+  }, []);
 
   const handleAddToMyParty = async (playerData: PlayerData) => {
     if (
@@ -63,6 +102,43 @@ export default function Dungeons() {
     }
     setMyParty([...myParty, playerData]);
   };
+
+  function updatePlayersWithMorByRole(
+    dungeonsDetails: any[],
+    fetchPlayersWithMor: PlayerData[],
+    setRemoveMor: (players: MyParty[]) => void
+  ) {
+    // Cria uma lista com todos os jogadores da dungeon atual
+    const allPlayersInDungeon = dungeonsDetails.flatMap((dungeon) =>
+      dungeon?.roles?.map((role: Record<string, { nick: string; ip?: string }>) => ({
+        nick: Object.values(role)[0]?.nick, // Nick do jogador
+        role: Object.keys(role)[0], // Role associada ao jogador
+        ip: Object.values(role)[0]?.ip || "0", // IP do jogador (padrão "0" caso ausente)
+        roleIcon: roles.find((r) => r.value === Object.keys(role)[0])?.icon
+      }))
+    );
+  
+    // Filtra jogadores que estão na DG, têm MOR e a role coincide
+    const playersWithMorInDungeon = allPlayersInDungeon.filter((player) =>
+      fetchPlayersWithMor.some(
+        (morPlayer) =>
+          morPlayer.nick.toLowerCase() === player.nick.toLowerCase() &&
+          morPlayer.role.toLowerCase() === player.role.toLowerCase()
+      )
+    );
+  
+    // Formata os jogadores para a estrutura necessária e atualiza a lista
+    const formattedPlayers = playersWithMorInDungeon.map((player) => ({
+      nick: player.nick,
+      role: player.role,
+      ip: player.ip,
+      roleIcon: player.roleIcon
+    }));
+  
+    setRemoveMor(formattedPlayers); // Atualiza a lista de jogadores com MOR
+  }
+  
+  
 
   async function fetchWithRetry(url: string, options = {}, retries = 50, delay = 2000) {
     for (let i = 0; i < retries; i++) {
@@ -110,17 +186,10 @@ export default function Dungeons() {
     setIsProcessingRemove(true);
 
     try {
-      const messages = await fetchWithRetry(
-        `${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/history/${process.env.NEXT_PUBLIC_MOR_ROOM_ID}`,
-        {},
-        50,
-        2000
-      );
-
       const playersToRemove = players.map((player) => player.nick.trim());
       const messageIdsToDelete: { nickname: string; id: string }[] = [];
 
-      for (const message of messages) {
+      for (const message of messages as any) {
         const playerNick = playersToRemove.find((nick) =>
           message.cleanContent.toLowerCase().includes(nick.toLowerCase().trim())
         );
@@ -165,28 +234,11 @@ export default function Dungeons() {
   });
 
   useEffect(() => {
-    if (dungeonsDetails && dungeonsDetails[0]?.roles) {
-      const playersWithMor = dungeonsDetails[0]?.roles.flatMap(
-        (
-          role: Record<string, { nick: string; ip?: string; hasMor?: boolean }>
-        ) =>
-          Object.values(role)
-            .filter((player) => player.hasMor)
-            .map((player) => ({
-              nick: player.nick,
-              role: Object.keys(role)[0],
-              ip: player.ip || "0",
-              hasMor: player.hasMor,
-              roleIcon: roles.find((r) => r.value === Object.keys(role)[0])
-                ?.icon,
-            }))
-      );
-
-      if (playersWithMor) {
-        setRemoveMor(playersWithMor);
-      }
+    if (dungeonsDetails && fetchPlayersWithMor) {
+      updatePlayersWithMorByRole(dungeonsDetails, fetchPlayersWithMor, setRemoveMor);
     }
-  }, [dungeonsDetails]);
+  }, [dungeonsDetails, fetchPlayersWithMor]);
+  
 
   if (isLoading) {
     return (
@@ -218,17 +270,22 @@ export default function Dungeons() {
           ) => ({
             nick: role[roleName]?.nick,
             ip: role[roleName]?.ip || "0",
-            hasMor: role[roleName]?.hasMor || false,
+            hasMor: fetchPlayersWithMor.some(
+              (player) =>
+                player.nick.toLowerCase() === role[roleName]?.nick.toLowerCase() &&
+                player.role.toLowerCase() === roleName.toLowerCase()
+            ),
             role: roleName,
             roleIcon: roles.find((r) => r.value === roleName)?.icon,
           })
         ) ?? [];
-
+  
     return roleUsers.sort((a: PlayerData, b: PlayerData) => {
       if (a.hasMor !== b.hasMor) return b.hasMor ? 1 : -1;
       return parseInt(b.ip) - parseInt(a.ip);
     });
   };
+  
 
 
   const handleCopy = async (eventId: string) => {
@@ -240,7 +297,7 @@ export default function Dungeons() {
       description: "O link foi copiado para sua área de transferência.",
     });
     setTimeout(() => setCopiedId(null), 2000);
-  };
+  };  
 
   const renderPlayerSlot = (role: Role) => {
     const players = filterUsersByRole(role.value);
