@@ -34,6 +34,7 @@ interface TopPlayerCardProps {
     }
     eloInfo: {
       current: {
+        color: any
         name: string
         icon: string
         threshold: number
@@ -76,10 +77,10 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
   const getRoleIcon = (roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon;
-  };  
+  };
 
   return (
-    <motion.div 
+    <motion.div
       className={`relative rounded-lg ${getBackgroundGradient()} border-2 ${getBorderColor()} p-3 flex flex-col gap-4 overflow-hidden`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -89,10 +90,10 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
         <Trophy className={`w-6 h-6 ${rank <= 3 ? 'text-yellow-400' : 'text-zinc-400'}`} />
         <span className="absolute text-xs font-bold bg-zinc-900 px-1 rounded-full -bottom-2">{rank}</span>
       </div>
-      
+
       <div className="flex items-center gap-4 mt-4">
         <div className="flex-1 flex items-center gap-3">
-          <Image 
+          <Image
             src={player.playerData.user.image || '/chiqueirinhologo.webp'}
             alt={player.nick || 'Player'}
             width={48}
@@ -159,10 +160,10 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
           <div className="text-xs text-zinc-400">{player.eloInfo.progress.toFixed(0)}%</div>
         </div>
         <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
-          <motion.div 
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+          <motion.div
+            className={`h-full ${player.eloInfo?.current?.color}`}
             initial={{ width: 0 }}
-            animate={{ width: `${player.eloInfo.progress}%` }}
+            animate={{ width: `${Math.round(player.eloInfo?.progress || 0)}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         </div>

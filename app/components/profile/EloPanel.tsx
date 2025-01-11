@@ -165,7 +165,7 @@ export function EloPanel({ profile }: { profile: any }) {
                 ) : null}
                 <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
                   <motion.div
-                    className="h-full bg-white"
+                    className={`h-full ${eloInfo?.current?.color}`}
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.round(eloInfo?.progress || 0)}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}

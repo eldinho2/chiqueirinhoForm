@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { roles } from "@/lib/roles";
+import { motion } from "framer-motion";
 
 interface RoleProgressProps {
   role: string;
@@ -25,7 +26,7 @@ export function RoleProgress({ role, points, ELOS }: RoleProgressProps) {
 
   const currentEloIndex = eloEntries.findIndex(
     ([, value], index) => {
-      const nextThreshold = 
+      const nextThreshold =
         index + 1 < eloEntries.length ? eloEntries[index + 1][1].threshold : Infinity;
       return points >= value.threshold && points < nextThreshold;
     }
@@ -64,16 +65,18 @@ export function RoleProgress({ role, points, ELOS }: RoleProgressProps) {
             </div>
           )}
           <div className="flex flex-col items-center gap-2">
-          <div className="relative w-32 h-2 bg-neutral-700 rounded-full overflow-hidden">
-            <div
-              style={{ width: `${progress}%` }}
-              className={`absolute top-0 left-0 h-full bg-white transition-all duration-300`}
-            />
-          </div>
-          <span className={`flex gap-2 items-center ${currentElo[1].textColor}`}>
+            <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
+              <motion.div
+                className={`h-full ${currentElo[1]?.color}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+              />
+            </div>
+            <span className={`flex gap-2 items-center ${currentElo[1].textColor}`}>
               {points} <p className="text-xs">pontos</p>
             </span>
-            </div>
+          </div>
           {nextElo && (
             <div className="flex flex-col items-center">
               <span className={`text-xs font-bold ${nextElo.textColor}`}>

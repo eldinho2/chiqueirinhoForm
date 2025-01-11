@@ -7,6 +7,23 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+	safelist: [
+    'bg-amber-500',
+		'text-amber-500',
+    'bg-orange-500',
+		'text-orange-500',
+    'text-amber-500',
+		'bg-orange-500',
+    'text-orange-500',
+		'bg-gray-400',
+		'text-gray-400',
+		'bg-yellow-400',
+		'text-yellow-400',
+		'bg-blue-500',
+		'text-blue-500',
+		'bg-purple-500',
+		'text-purple-500',
+  ],
   theme: {
   	extend: {
       fontFamily: { 
