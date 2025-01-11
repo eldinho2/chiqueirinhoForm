@@ -1,28 +1,60 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import localFont from 'next/font/local';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import Header from './components/Header';
-import Leaderboard from "@/app/components/leaderboard/Leaderboard";
-import RoleLeaderboard from "@/app/components/leaderboard/RoleLeaderboard";
-import HighestEloLeaderboard from "@/app/components/leaderboard/HighestEloLeaderboard";
+import Leaderboard from '@/app/components/leaderboard/Leaderboard';
+import RoleLeaderboard from '@/app/components/leaderboard/RoleLeaderboard';
+import HighestEloLeaderboard from '@/app/components/leaderboard/HighestEloLeaderboard';
 import Loading from '@/utils/Loading';
 import { processPlayerStats } from '@/utils/leaderboardUtils';
 import { ELOS } from '@/lib/elos';
 import { roles } from '@/lib/roles';
-import { Button } from "@/components/ui/button"
 
 const koch = localFont({
   src: '../public/fonts/Koch Fraktur.ttf',
   weight: '100',
 });
 
-export default function Home() {
-  const [weekData, setWeekData] = useState({});
-  const [playersData, setPlayersData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeLeaderboard, setActiveLeaderboard] = useState('total'); // 'total' or 'role'
+// Função para buscar os dados da API
+const fetchAllTimeData = async () => {
+  const response = await fetch('/api/getAllTimeData');
+  if (!response.ok) {
+    throw new Error('Failed to fetch all-time data');
+  }
+  return response.json();
+};
 
+// Função para buscar detalhes de cada jogador
+const fetchPlayerDetails = async (player: any) => {
+  const { nick } = player;
+  try {
+    const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
+    const playerId = await playerIdResponse.json();
+
+    const playerDataResponse = await fetch(`/api/getUserProfile/${playerId}`);
+    const playerData = await playerDataResponse.json();
+
+    return { ...player, playerData };
+  } catch {
+    return { ...player, playerData: { icon: '/chiqueirinhologo.webp' } };
+  }
+};
+
+export default function Home() {
+  const [activeLeaderboard, setActiveLeaderboard] = useState('total');
+  const [playersDataWithDetails, setPlayersDataWithDetails] = useState<any[]>([]);
+
+  // Consulta inicial dos dados
+  const { data: weekData, isLoading, isError, error } = useQuery({
+    queryKey: ['playersAllTimeData'],
+    queryFn: fetchAllTimeData,
+  });
+
+  // Função para obter informações de Elo
   const getEloInfo = useCallback((points: number) => {
     const eloEntries = Object.entries(ELOS);
 
@@ -34,120 +66,124 @@ export default function Home() {
 
     const currentElo = currentEloIndex >= 0 ? eloEntries[currentEloIndex] : eloEntries[0];
     const nextElo = currentEloIndex + 1 < eloEntries.length ? eloEntries[currentEloIndex + 1][1] : null;
-    const previousElo = currentEloIndex - 1 >= 0 ? eloEntries[currentEloIndex - 1][1] : null;
 
     const progress =
       nextElo && currentElo[1]
         ? Math.min(
-          ((points - currentElo[1].threshold) / (nextElo.threshold - currentElo[1].threshold)) * 100,
-          100
-        )
+            ((points - currentElo[1].threshold) / (nextElo.threshold - currentElo[1].threshold)) * 100,
+            100
+          )
         : 100;
 
     return {
       current: currentElo[1],
       next: nextElo,
-      previous: previousElo,
       progress,
     };
   }, []);
 
+  // Função para obter o ícone de role
   const getRoleIcon = useCallback((roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon || '/chiqueirinhologo.webp';
   }, []);
 
-  const fetchPlayerDetails = useCallback(async (player: any) => {
-    try {
-      const { nick } = player;
-      const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
-      const playerId = await playerIdResponse.json();
-
-      const playerDataResponse = await fetch(`/api/getUserProfile/${playerId}`);
-      const playerData = await playerDataResponse.json();
-
-      return { ...player, playerData };
-    } catch {
-      return { ...player, playerData: { icon: '/chiqueirinhologo.webp' } };
-    }
-  }, []);
-
-  const attachPicturesToPlayers = useCallback(async (dungeons: any) => {
-    try {
-      const sortedPlayers = processPlayerStats(dungeons);
-      const playerData = await Promise.all(sortedPlayers.map(fetchPlayerDetails));
-      return playerData;
-    } catch (error) {
-      console.error("Error attaching pictures to players:", error);
-      return [];
-    }
-  }, [fetchPlayerDetails]);
-
+  // Efeito para buscar detalhes dos jogadores
   useEffect(() => {
-    const fetchWeekData = async () => {
+    const fetchDetails = async () => {
+      if (!weekData) return;
+      const sortedPlayers = processPlayerStats(weekData);
+
       try {
-        const response = await fetch('/api/getAllTimeData');
-        const data = await response.json();
-        setWeekData(data);
-        const playersWithPictures = await attachPicturesToPlayers(data);
-        setPlayersData(playersWithPictures as any);
+        const playersWithDetails = await Promise.all(
+          sortedPlayers.map((player: any) => fetchPlayerDetails(player))
+        );
+        setPlayersDataWithDetails(playersWithDetails);
       } catch (error) {
-        console.error("Error fetching week data:", error);
-      } finally {
-        setLoading(false);
+        console.error('Erro ao buscar detalhes dos jogadores:', error);
+        setPlayersDataWithDetails(sortedPlayers);
       }
     };
-    fetchWeekData();
-  }, [attachPicturesToPlayers]);
 
+    fetchDetails();
+  }, [weekData]);
+
+  // Computação de dados aprimorados
   const enhancedPlayers = useMemo(() => {
-    return playersData.map((player: any) => ({
+    if (!playersDataWithDetails) return [];
+    return playersDataWithDetails.map((player: any) => ({
       ...player,
       eloInfo: getEloInfo(player.playerData?.highestStats?.roleWhithMorePoints?.points || 0),
       roleIcon: getRoleIcon(player.playerData?.highestStats?.mostFrequentRole?.role || ''),
       highestRoleIcon: getRoleIcon(player.playerData?.highestStats?.roleWhithMorePoints?.role || ''),
     }));
-  }, [playersData, getEloInfo, getRoleIcon]);
+  }, [playersDataWithDetails, getEloInfo, getRoleIcon]);
+
+  if (isError) return <div>Error: {error?.message || 'Failed to load data'}</div>;
 
   return (
-    <div>
+    <div className="min-h-screen">
       <Header />
-      {loading ? (<Loading />) : (
-        <main className=''>
-          <h1 className={`${koch.className} font-koch text-6xl mt-6 flex justify-center mb-2`}>
-            Chiqueirinho Avaloniano
-          </h1>
-          <div className="flex justify-center space-x-4">
-            <Button 
-              onClick={() => setActiveLeaderboard('total')}
-              variant="outline" 
-              className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${activeLeaderboard === 'total' ? 'bg-zinc-400' : ''}`}
-            >
-              Pontos Totais
-            </Button>
-            <Button 
-              onClick={() => setActiveLeaderboard('role')}
-              variant="outline" 
-              className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${activeLeaderboard === 'role' ? 'bg-zinc-400' : ''}`}
-            >
-              Pontos por Role
-            </Button>
-            <Button 
-              onClick={() => setActiveLeaderboard('highestElos')}
-              variant="outline" 
-              className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${activeLeaderboard === 'highestElos' ? 'bg-zinc-400' : ''}`}
-            >
-              Jogadores com maior Elo
-            </Button>
-          </div>
-          <div>
-            {activeLeaderboard === 'total' && <Leaderboard players={enhancedPlayers} />}
-            {activeLeaderboard === 'role' && <RoleLeaderboard players={enhancedPlayers} />}
-            {activeLeaderboard === 'highestElos' && <HighestEloLeaderboard players={enhancedPlayers} />}
-          </div>
-        </main>
-      )}
+      <main className="">
+        <motion.h1
+          className={`${koch.className} font-koch text-6xl mt-6 flex justify-center mb-2 text-white`}
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          Chiqueirinho Avaloniano
+        </motion.h1>
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <>
+        <motion.div
+          className="flex justify-center space-x-4 mb-8"
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Button
+            onClick={() => setActiveLeaderboard('total')}
+            variant="outline"
+            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+              activeLeaderboard === 'total' ? 'bg-zinc-400' : ''
+            }`}
+          >
+            Pontos Totais
+          </Button>
+          <Button
+            onClick={() => setActiveLeaderboard('role')}
+            variant="outline"
+            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+              activeLeaderboard === 'role' ? 'bg-zinc-400' : ''
+            }`}
+          >
+            Pontos por Role
+          </Button>
+          <Button
+            onClick={() => setActiveLeaderboard('highestElos')}
+            variant="outline"
+            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+              activeLeaderboard === 'highestElos' ? 'bg-zinc-400' : ''
+            }`}
+          >
+            Jogadores com maior Elo
+          </Button>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-sm"
+        >
+          {activeLeaderboard === 'total' && <Leaderboard players={enhancedPlayers} />}
+          {activeLeaderboard === 'role' && <RoleLeaderboard players={enhancedPlayers} />}
+          {activeLeaderboard === 'highestElos' && <HighestEloLeaderboard players={enhancedPlayers} />}
+        </motion.div>
+        </>
+        )}
+      </main>
     </div>
   );
 }
-

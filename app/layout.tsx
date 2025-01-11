@@ -1,19 +1,33 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SessionProvider } from "next-auth/react"
-import { Inter } from 'next/font/google'
+import { SessionProvider } from "next-auth/react";
+import { Inter } from "next/font/google";
+import { QueryClientProvider } from "@tanstack/react-query";
+import ReactQueryProvider from "@/lib/ReactQueryProvider";
 
 const inter = Inter({
-  subsets: ['latin'],
-  weight: '600',
-})
-
-
+  subsets: ["latin"],
+  weight: "600",
+});
 
 export const metadata: Metadata = {
   title: "Chiqueirinho Form 🐷",
   description: "Formulário do Chiqueirinho - 🐷",
-  keywords: ["formulário", "chiqueirinho", "gerenciamento", "sistema", "chiqueirinho form", "form", "ava form", "ava", "chiqueirinho ava", "albion", 'avalonian albion', 'dungeon', 'ava dungeon'],
+  keywords: [
+    "formulário",
+    "chiqueirinho",
+    "gerenciamento",
+    "sistema",
+    "chiqueirinho form",
+    "form",
+    "ava form",
+    "ava",
+    "chiqueirinho ava",
+    "albion",
+    "avalonian albion",
+    "dungeon",
+    "ava dungeon",
+  ],
   authors: [{ name: "Chiqueirinho" }],
   creator: "Chiqueirinho",
   publisher: "Chiqueirinho",
@@ -58,11 +72,11 @@ export default function RootLayout({
 }>) {
   return (
     <SessionProvider>
-      <html lang="pt-br" className={`${inter.className}`}>
-        <body>
-          {children}
-        </body>
-      </html>
+      <ReactQueryProvider>
+        <html lang="pt-br" className={`${inter.className}`}>
+          <body>{children}</body>
+        </html>
+      </ReactQueryProvider>
     </SessionProvider>
   );
 }

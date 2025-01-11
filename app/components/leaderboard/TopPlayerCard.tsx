@@ -94,14 +94,14 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
       <div className="flex items-center gap-4 mt-4">
         <div className="flex-1 flex items-center gap-3">
           <Image
-            src={player.playerData.user.image || '/chiqueirinhologo.webp'}
+            src={player?.playerData?.user?.image || '/chiqueirinhologo.webp'}
             alt={player.nick || 'Player'}
             width={48}
             height={48}
             className='rounded-full border-2 border-zinc-700'
           />
           <div>
-            <Link href={`/perfil/${player.playerData.user?.userID}`} className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</Link>
+            <Link href={`/perfil/${player.playerData?.user?.userID}`} className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</Link>
             <div className=" text-zinc-400 flex items-center gap-1">
               <Image
                 src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhologo.webp'}
@@ -122,13 +122,13 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             <div className='flex flex-col items-center justify-center'>
               <div className="text-xs text-zinc-400">Elo Atual</div>
               <div className="text-lg font-bold text-zinc-100 flex items-center gap-1">
-                <span >{player.eloInfo.current.name}</span>
-                <span className=''>{player.eloInfo.current.icon}</span>
+                <span >{player?.eloInfo?.current?.name}</span>
+                <span className=''>{player.eloInfo?.current?.icon}</span>
               </div>
             </div>
             <Image
-              src={player.highestRoleIcon}
-              alt={player.playerData.highestStats.roleWhithMorePoints.role}
+              src={player?.highestRoleIcon}
+              alt={player?.playerData?.highestStats?.roleWhithMorePoints?.role || 'Role'}
               width={32}
               height={32}
               className="bg-neutral-800"
@@ -167,7 +167,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             transition={{ duration: 1, ease: "easeOut" }}
           />
         </div>
-        <p className='text-center text-xs pt-2 text-zinc-400'>{player.playerData.highestStats.roleWhithMorePoints.points} pontos</p>
+        <p className='text-center text-xs pt-2 text-zinc-400'>{player.playerData?.highestStats?.roleWhithMorePoints?.points} pontos</p>
       </div>
 
       <div className="flex justify-between items-center mt-2 text-xs">

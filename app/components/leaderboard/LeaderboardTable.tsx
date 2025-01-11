@@ -37,7 +37,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             {players.map((player, index) => (
               <motion.tr
                 key={player.nick}
-                className="border-b border-zinc-800 hover:bg-zinc-800/30 transition-colors"
+                className="border-b border-zinc-800 hover:bg-zinc-800/30 transition-colors text-base"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -47,18 +47,18 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 </td>
                 <td className="px-4 py-3 flex items-center gap-3">
                   <Image
-                    src={player.playerData.user.image || '/chiqueirinhologo.webp'}
+                    src={player.playerData?.user?.image || '/chiqueirinhologo.webp'}
                     alt={player.nick || 'Player'} 
                     width={32}
                     height={32}
                     className="rounded-full"
                   />
-                  <Link href={`/perfil/${player.playerData.user.userID}`}>{player.nick}</Link>
+                  <Link className='text-sm' href={`/perfil/${player.playerData?.user?.userID}`}>{player.nick}</Link>
                 </td>
                 <td className="px-4 py-3">{player.totalPoints.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg" title={player.eloInfo.current.name}>{player.playerData.highestStats.roleWhithMorePoints.role} {player.eloInfo.current.icon}</span>
+                    <span title={player.eloInfo.current.name}>{player.playerData?.highestStats?.roleWhithMorePoints?.role} {player.eloInfo?.current?.icon}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">{parseInt(player.damage).toLocaleString()}</td>
