@@ -47,14 +47,13 @@ const fetchPlayerDetails = async (player: any) => {
 export default function Home() {
   const [activeLeaderboard, setActiveLeaderboard] = useState('total');
   const [playersDataWithDetails, setPlayersDataWithDetails] = useState<any[]>([]);
+  const [isLoadingWithTimeOut ,setIsLoadingWithTimeOut] = useState(true);
 
-  // Consulta inicial dos dados
   const { data: weekData, isLoading, isError, error } = useQuery({
     queryKey: ['playersAllTimeData'],
     queryFn: fetchAllTimeData,
   });
 
-  // Função para obter informações de Elo
   const getEloInfo = useCallback((points: number) => {
     const eloEntries = Object.entries(ELOS);
 
@@ -82,13 +81,11 @@ export default function Home() {
     };
   }, []);
 
-  // Função para obter o ícone de role
   const getRoleIcon = useCallback((roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon || '/chiqueirinhologo.webp';
   }, []);
 
-  // Efeito para buscar detalhes dos jogadores
   useEffect(() => {
     const fetchDetails = async () => {
       if (!weekData) return;
@@ -108,7 +105,6 @@ export default function Home() {
     fetchDetails();
   }, [weekData]);
 
-  // Computação de dados aprimorados
   const enhancedPlayers = useMemo(() => {
     if (!playersDataWithDetails) return [];
     return playersDataWithDetails.map((player: any) => ({
@@ -120,6 +116,14 @@ export default function Home() {
   }, [playersDataWithDetails, getEloInfo, getRoleIcon]);
 
   if (isError) return <div>Error: {error?.message || 'Failed to load data'}</div>;
+
+  useEffect(() => {
+    if (isLoading) {
+    setTimeout(() => {
+      setIsLoadingWithTimeOut(false);
+    }, 1500);
+  }
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -133,7 +137,7 @@ export default function Home() {
         >
           Chiqueirinho Avaloniano
         </motion.h1>
-        {isLoading ? (
+        {isLoadingWithTimeOut ? (
           <Loading />
         ) : (
           <>
