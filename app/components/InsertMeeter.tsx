@@ -77,6 +77,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
+  const [missingPlayers, setMissingPlayers] = useState<RoleNickPair[]>([]);
 
   const roles = dungeon[0].roles;
 
@@ -91,8 +92,11 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   );
 
   const extractHPS = (inputText: string, nick: string): string => {
-    const regex = new RegExp(`${nick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
-    const match = inputText.match(regex);
+    const normalizedInput = inputText.toLowerCase();
+    const normalizedNick = nick.toLowerCase(); 
+
+    const regex = new RegExp(`${normalizedNick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
+    const match = normalizedInput.match(regex);
 
     if (!match) {
       console.warn(`HPS não encontrado para o jogador: ${nick}`);
@@ -102,20 +106,44 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   };
 
   const extractDPS = (inputText: string, nick: string) => {
-    const regex = new RegExp(
-      `${nick}:\\s*(\\d+(?:\\.\\d+)?)\\((\\d+,\\d+)%\\)\\|(\\d+(?:\\.\\d+)?,\\d+)\\s*DPS`,
-      "i"
-    );
-    const match = inputText.match(regex);
+    const normalizedInput = inputText.toLowerCase();
+    const normalizedNick = nick.toLowerCase();
   
-    if (!match) {
-      console.warn(`DPS não encontrado para o jogador: ${nick}`);
+    const inputPlayers = normalizedInput
+      .split("\n")
+      .map((line) => line.split(":")[0].trim())
+      .filter((nick) => nick); 
+  
+    const allNicks = roleNickPairs.map((pair) => pair.nick.toLowerCase());
+  
+    const playersIntrusos = inputPlayers.filter(
+      (player) => !allNicks.includes(player)
+    );
+  
+    setMissingPlayers(playersIntrusos as any);
+  
+    const line = normalizedInput.split("\n").find((line) => line.includes(`${normalizedNick}:`));
+  
+    if (!line) {
+      console.warn(`DPS não encontrado para o jogador: ${normalizedNick}`);
+      return { total: "0", percentage: "0", perSecond: "0" };
     }
   
-    return match
-      ? { total: match[1], percentage: match[2], perSecond: match[3] }
-      : { total: "0", percentage: "0%", perSecond: "0" };
+    const parts = line.split("|");
+    const totalAndPercentage = parts[0];
+    const perSecondWithDPS = parts[1];
+  
+    const totalAndPercentParts = totalAndPercentage.split(/[:()]/).map((part) => part.trim());
+    const total = totalAndPercentParts[1];
+    const percentage = totalAndPercentParts[2];
+  
+    return {
+      total: total.replace(/\./g, ""),
+      percentage: percentage.replace(",", "."),
+      perSecond: perSecondWithDPS.split(' ')[0],
+    };
   };
+  
 
   const calculateDpsScore = (
     dps: number,
@@ -181,9 +209,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
         if (dpsRoles.includes(role)) {
           points = 0;
         }
+
         const dpsData = extractDPS(combinedText, nick);
-        console.log('dpsData', dpsData);
-        
+
         let heal = extractHPS(combinedText, nick);
         heal = isNaN(parseFloat(heal)) ? "0" : heal;
         return {
@@ -304,8 +332,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       prev.map((dg, index) =>
         index === dgIndex
           ? dg.map((player) =>
-              player.nick === nick ? { ...player, points: score } : player
-            )
+            player.nick === nick ? { ...player, points: score } : player
+          )
           : dg
       )
     );
@@ -369,9 +397,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     return Array.from(allPlayers.values());
   };
 
-  const handleClearDungeon = async() => {
+  const handleClearDungeon = async () => {
     const role = dungeon[0].roles
-    const eventId = dungeon[0].eventId    
+    const eventId = dungeon[0].eventId
 
     await fetch("/api/clearDungeon", {
       method: "POST",
@@ -387,7 +415,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
     if (warningWasRead === false) return;
 
-    setIsWarningOpen(false)    
+    setIsWarningOpen(false)
     setIsSaving(true);
     const totalPoints = calculateTotalPoints();
 
@@ -426,7 +454,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const fadeIn = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  };
+  };  
 
   return (
     <>
@@ -436,7 +464,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             Abrir Inserção
           </motion.button>
         </DialogTrigger>
-        <DialogContent className="bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[900px] overflow-y-auto">
+        <DialogContent className={`bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[700px] overflow-y-auto ${missingPlayers.length > 0 ? "border border-red-700" : ""}`}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-purple-300 flex justify-center">
               Calcular Meeter
@@ -448,21 +476,19 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           <div className="flex flex-col justify-center items-center">
             <div className="flex gap-2 justify-center mb-4">
               <button
-                className={`px-3 py-1 rounded-lg ${
-                  activeTab === 0
+                className={`px-3 py-1 rounded-lg ${activeTab === 0
                     ? "bg-purple-600 text-white"
                     : "bg-gray-700 text-gray-300"
-                }`}
+                  }`}
                 onClick={() => setActiveTab(0)}
               >
                 DG 1
               </button>
               <button
-                className={`px-3 py-1 rounded-lg ${
-                  activeTab === 1
+                className={`px-3 py-1 rounded-lg ${activeTab === 1
                     ? "bg-purple-600 text-white"
                     : "bg-gray-700 text-gray-300"
-                }`}
+                  }`}
                 onClick={() => setActiveTab(1)}
               >
                 DG 2
@@ -470,11 +496,10 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
               {textDGs.slice(2).map((_, index) => (
                 <div key={index + 2} className="flex items-center">
                   <button
-                    className={`px-3 py-1 rounded-lg ${
-                      activeTab === index + 2
+                    className={`px-3 py-1 rounded-lg ${activeTab === index + 2
                         ? "bg-purple-600 text-white"
                         : "bg-gray-700 text-gray-300"
-                    }`}
+                      }`}
                     onClick={() => setActiveTab(index + 2)}
                   >
                     DG {index + 3}
@@ -496,23 +521,34 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             </div>
             <div className="gap-2 flex justify-center mb-4">
               <button
-                className={`px-3 py-1 rounded-lg ${
-                  activeTab === textDGs.length
+                className={`px-3 py-1 rounded-lg ${activeTab === textDGs.length
                     ? "bg-purple-600 text-white"
                     : "bg-gray-700 text-gray-300"
-                }`}
+                  }`}
                 onClick={() => setActiveTab(textDGs.length)}
               >
                 Pontuações Totais
               </button>
             </div>
+            {missingPlayers.length > 0 && (
+  <div className="flex flex-col items-center">
+    <h3 className="text-lg font-semibold text-red-500 mb-2">
+      Jogadores Faltando: (não preencherãm o forms ou estão com o nick errado!)
+    </h3>
+    <ul className="list-disc list-inside">
+      {missingPlayers.map((player: any, index) => (
+        <li key={index}>{player}</li>
+      ))}
+    </ul>
+  </div>
+)}
+
           </div>
           {textDGs.map((textDG, index) => (
             <motion.div
               key={index}
-              className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
-                activeTab === index ? "block" : "hidden"
-              }`}
+              className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${activeTab === index ? "block" : "hidden"
+                }`}
               variants={fadeIn}
               initial="hidden"
               animate="visible"
@@ -589,7 +625,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                           {Number(player.damage).toLocaleString()}
                         </td>
                         <td className="py-2 px-4 border-b border-gray-600 text-center">
-                          {player.percentage} %
+                          {player.percentage}
                         </td>
                         <td className="py-2 px-4 border-b border-gray-600 text-center">
                           {player.perSecond}
@@ -620,13 +656,12 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+                </div>
             </motion.div>
           ))}
           <motion.div
-            className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
-              activeTab === textDGs.length ? "block" : "hidden"
-            }`}
+            className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${activeTab === textDGs.length ? "block" : "hidden"
+              }`}
             variants={fadeIn}
             initial="hidden"
             animate="visible"
@@ -639,64 +674,56 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                 {calculateTotalPoints().length} - jogadores
               </p>
             </div>
-            <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b border-gray-600">
-                    Jogador
-                  </th>
-                  <th className="py-2 px-4 border-b border-gray-600">Role</th>
-                  <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
-                  <th className="py-2 px-4 border-b border-gray-600">
-                    Total de Dano
-                  </th>
-                  <th className="py-2 px-4 border-b border-gray-600">
-                    Cura Total
-                  </th>
-                  <th className="py-2 px-4 border-b border-gray-600">
-                    Maior DPS
-                  </th>
-                  <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calculateTotalPoints().map((player, index) => (
-                  <tr key={index}>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {player.nick}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
-                      <Image
-                        src={
-                          DefaultRoles.find((role) => role.value === player.role)
-                            ?.icon ?? "/path/to/default/icon.png"
-                        }
-                        alt={player.role}
-                        width={25}
-                        height={25}
-                        className="mx-2"
-                      />
-                      {player.role}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {player.points}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {Number(player.damage).toLocaleString()}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {player.heal}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {player.maxDps}
-                    </td>
-                    <td className="py-2 px-4 border-b border-gray-600 text-center">
-                      {player.maxPercentage}
-                    </td>
+              <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Role</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Total de Dano</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Cura Total</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Maior DPS</th>
+                    <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {calculateTotalPoints().map((player, index) => (
+                    <tr key={index}>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.nick}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
+                        <Image
+                          src={
+                            DefaultRoles.find((role) => role.value === player.role)?.icon ??
+                            "/path/to/default/icon.png"
+                          }
+                          alt={player.role}
+                          width={25}
+                          height={25}
+                          className="mx-2"
+                        />
+                        {player.role}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.points}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {Number(player.damage).toLocaleString()}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.heal}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.maxDps}
+                      </td>
+                      <td className="py-2 px-4 border-b border-gray-600 text-center">
+                        {player.maxPercentage}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             <div className="flex justify-center mt-4">
               <button
                 className="p-2 rounded-lg bg-green-600 font-bold"
@@ -711,49 +738,49 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           </motion.div>
         </DialogContent>
       </Dialog>
-        <Dialog open={isWarningOpen}>
-          <DialogContent className="bg-[#2A2A2A] p-6 rounded-lg w-[400px]">
-            <DialogTitle className="text-xl text-center font-bold text-purple-300 mb-4">
+      <Dialog open={isWarningOpen}>
+        <DialogContent className="bg-[#2A2A2A] p-6 rounded-lg w-[400px]">
+          <DialogTitle className="text-xl text-center font-bold text-purple-300 mb-4">
             ⚠ Aviso Importante ⚠
-            </DialogTitle>
-            <motion.div
-      className="text-red-500 p-4 rounded-lg shadow-lg max-w-md mx-auto flex flex-col gap-4"
-      initial={{ opacity: 0, y: -50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <p>
-        A dg será limpa após salvar.
-      </p>
-      <p>
-        Confira os players do meeter e os que participaram da dg.
-      </p>
-      <p>
-        Antes de salvar, verifique se todos os dados estão corretos.
-      </p>
-      <p>
-        A operação de salvar é irreversível.
-      </p>
-      <p>
-        Certifique-se de ter certeza de que deseja realizar essa operação.
-      </p>
-      <p>
-        Caso tenha certeza, clique em OK para prosseguir com a operação.
-      </p>
-    </motion.div>
-            <div className="flex justify-end">
-              <DialogClose
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                onClick={() => {
-                  setIsWarningOpen(false);
-                  setWarningWasRead(true);
-                }}
-              >
-                OK
-              </DialogClose>
-            </div>
-          </DialogContent>
-        </Dialog>
+          </DialogTitle>
+          <motion.div
+            className="text-red-500 p-4 rounded-lg shadow-lg max-w-md mx-auto flex flex-col gap-4"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <p>
+              A dg será limpa após salvar.
+            </p>
+            <p>
+              Confira os players do meeter e os que participaram da dg.
+            </p>
+            <p>
+              Antes de salvar, verifique se todos os dados estão corretos.
+            </p>
+            <p>
+              A operação de salvar é irreversível.
+            </p>
+            <p>
+              Certifique-se de ter certeza de que deseja realizar essa operação.
+            </p>
+            <p>
+              Caso tenha certeza, clique em OK para prosseguir com a operação.
+            </p>
+          </motion.div>
+          <div className="flex justify-end">
+            <DialogClose
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              onClick={() => {
+                setIsWarningOpen(false);
+                setWarningWasRead(true);
+              }}
+            >
+              OK
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
