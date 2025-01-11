@@ -57,7 +57,6 @@ export default function Dungeons() {
       const playerRoleMap: { nick: string; role: string, hasMor: boolean }[] = [];
   
       for (const message of messages as any) {
-        // Regex para capturar jogador e role
         const match = message.cleanContent.match(/@([^\s🔁]+)\s*🔁\s*(.+)/);
   
         if (match) {
@@ -108,17 +107,15 @@ export default function Dungeons() {
     fetchPlayersWithMor: PlayerData[],
     setRemoveMor: (players: MyParty[]) => void
   ) {
-    // Cria uma lista com todos os jogadores da dungeon atual
     const allPlayersInDungeon = dungeonsDetails.flatMap((dungeon) =>
       dungeon?.roles?.map((role: Record<string, { nick: string; ip?: string }>) => ({
-        nick: Object.values(role)[0]?.nick, // Nick do jogador
-        role: Object.keys(role)[0], // Role associada ao jogador
-        ip: Object.values(role)[0]?.ip || "0", // IP do jogador (padrão "0" caso ausente)
+        nick: Object.values(role)[0]?.nick,
+        role: Object.keys(role)[0],
+        ip: Object.values(role)[0]?.ip || "0",
         roleIcon: roles.find((r) => r.value === Object.keys(role)[0])?.icon
       }))
     );
   
-    // Filtra jogadores que estão na DG, têm MOR e a role coincide
     const playersWithMorInDungeon = allPlayersInDungeon.filter((player) =>
       fetchPlayersWithMor.some(
         (morPlayer) =>
@@ -127,7 +124,6 @@ export default function Dungeons() {
       )
     );
   
-    // Formata os jogadores para a estrutura necessária e atualiza a lista
     const formattedPlayers = playersWithMorInDungeon.map((player) => ({
       nick: player.nick,
       role: player.role,
@@ -135,7 +131,7 @@ export default function Dungeons() {
       roleIcon: player.roleIcon
     }));
   
-    setRemoveMor(formattedPlayers); // Atualiza a lista de jogadores com MOR
+    setRemoveMor(formattedPlayers);
   }
   
   

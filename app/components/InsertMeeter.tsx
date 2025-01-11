@@ -50,6 +50,7 @@ interface InsertMeeterProps {
 const dpsRoles = [
   "X-Bow",
   "Raiz Férrea DPS",
+  "Raiz Férrea",
   "Águia",
   "Frost",
   "Fire",
@@ -93,7 +94,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
   const extractHPS = (inputText: string, nick: string): string => {
     const normalizedInput = inputText.toLowerCase();
-    const normalizedNick = nick.toLowerCase(); 
+    const normalizedNick = nick.toLowerCase();
 
     const regex = new RegExp(`${normalizedNick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
     const match = normalizedInput.match(regex);
@@ -108,42 +109,50 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const extractDPS = (inputText: string, nick: string) => {
     const normalizedInput = inputText.toLowerCase();
     const normalizedNick = nick.toLowerCase();
-  
+
+    // Extrai os jogadores removendo o número e ponto no início
     const inputPlayers = normalizedInput
       .split("\n")
-      .map((line) => line.split(":")[0].trim())
-      .filter((nick) => nick); 
-  
+      .map((line) => line.replace(/^\d+\.\s*/, "").split(":")[0].trim()) // Remove número e ponto no início
+      .filter((nick) => nick);
+
     const allNicks = roleNickPairs.map((pair) => pair.nick.toLowerCase());
-  
+
     const playersIntrusos = inputPlayers.filter(
       (player) => !allNicks.includes(player)
     );
-  
+
     setMissingPlayers(playersIntrusos as any);
-  
-    const line = normalizedInput.split("\n").find((line) => line.includes(`${normalizedNick}:`));
-  
+
+    // Encontra a linha correta considerando o número no início e o nick
+    const line = normalizedInput
+      .split("\n")
+      .find((line) => {
+        // Garante que a linha começa com número e ponto (1., 2., etc.)
+        const startsWithNumber = /^\d+\.\s/.test(line);
+        return startsWithNumber && line.includes(`${normalizedNick}:`);
+      });
+
     if (!line) {
       console.warn(`DPS não encontrado para o jogador: ${normalizedNick}`);
       return { total: "0", percentage: "0", perSecond: "0" };
     }
-  
+
     const parts = line.split("|");
     const totalAndPercentage = parts[0];
     const perSecondWithDPS = parts[1];
-  
+
     const totalAndPercentParts = totalAndPercentage.split(/[:()]/).map((part) => part.trim());
     const total = totalAndPercentParts[1];
     const percentage = totalAndPercentParts[2];
-  
+
     return {
       total: total.replace(/\./g, ""),
       percentage: percentage.replace(",", "."),
       perSecond: perSecondWithDPS.split(' ')[0],
     };
   };
-  
+
 
   const calculateDpsScore = (
     dps: number,
@@ -206,6 +215,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       )
       .map(({ nick, role }) => {
         let points = 1;
+        if ("Raiz Férrea".includes(role)) {
+          points = 1;
+        }
         if (dpsRoles.includes(role)) {
           points = 0;
         }
@@ -323,8 +335,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       prev.map((dg, index) =>
         index === dgIndex
           ? dg.map((player) =>
-              player.nick === nick ? { ...player, points: score } : player
-            )
+            player.nick === nick ? { ...player, points: score } : player
+          )
           : dg
       )
     );
@@ -454,7 +466,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const fadeIn = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  };  
+  };
 
   return (
     <>
@@ -477,8 +489,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             <div className="flex gap-2 justify-center mb-4">
               <button
                 className={`px-3 py-1 rounded-lg ${activeTab === 0
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-700 text-gray-300"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
                   }`}
                 onClick={() => setActiveTab(0)}
               >
@@ -486,8 +498,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
               </button>
               <button
                 className={`px-3 py-1 rounded-lg ${activeTab === 1
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-700 text-gray-300"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
                   }`}
                 onClick={() => setActiveTab(1)}
               >
@@ -497,8 +509,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                 <div key={index + 2} className="flex items-center">
                   <button
                     className={`px-3 py-1 rounded-lg ${activeTab === index + 2
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-700 text-gray-300"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-700 text-gray-300"
                       }`}
                     onClick={() => setActiveTab(index + 2)}
                   >
@@ -522,8 +534,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             <div className="gap-2 flex justify-center mb-4">
               <button
                 className={`px-3 py-1 rounded-lg ${activeTab === textDGs.length
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-700 text-gray-300"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-700 text-gray-300"
                   }`}
                 onClick={() => setActiveTab(textDGs.length)}
               >
@@ -531,17 +543,17 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
               </button>
             </div>
             {missingPlayers.length > 0 && (
-  <div className="flex flex-col items-center">
-    <h3 className="text-lg font-semibold text-red-500 mb-2">
-      Jogadores Faltando: (não preencherãm o forms ou estão com o nick errado!)
-    </h3>
-    <ul className="list-disc list-inside">
-      {missingPlayers.map((player: any, index) => (
-        <li key={index}>{player}</li>
-      ))}
-    </ul>
-  </div>
-)}
+              <div className="flex flex-col items-center">
+                <h3 className="text-lg font-semibold text-red-500 mb-2">
+                  Jogadores Faltando: (não preencherãm o forms ou estão com o nick errado!)
+                </h3>
+                <ul className="list-disc list-inside">
+                  {missingPlayers.map((player: any, index) => (
+                    <li key={index}>{player}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           </div>
           {textDGs.map((textDG, index) => (
@@ -656,7 +668,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                     ))}
                   </tbody>
                 </table>
-                </div>
+              </div>
             </motion.div>
           ))}
           <motion.div
@@ -674,20 +686,22 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                 {calculateTotalPoints().length} - jogadores
               </p>
             </div>
-              <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Role</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Total de Dano</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Cura Total</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Maior DPS</th>
-                    <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {calculateTotalPoints().map((player, index) => (
+            <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Role</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Total de Dano</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Cura Total</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Maior DPS</th>
+                  <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calculateTotalPoints()
+                  .sort((a: any, b: any) => b.damage - a.damage as any)
+                  .map((player, index) => (
                     <tr key={index}>
                       <td className="py-2 px-4 border-b border-gray-600 text-center">
                         {player.nick}
@@ -722,8 +736,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                       </td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
+              </tbody>
+            </table>
+
             <div className="flex justify-center mt-4">
               <button
                 className="p-2 rounded-lg bg-green-600 font-bold"
