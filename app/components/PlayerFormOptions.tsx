@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Pencil, EllipsisVertical } from "lucide-react";
+import { Plus, Trash2, Pencil, EllipsisVertical, X } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -166,7 +166,7 @@ export default function PlayerFormOptions({ player, role, dungeonsDetails, event
             <DropdownMenuItem className="cursor-pointer" onClick={() => handleAddToMorList(playerData)} ><Plus /> Adicionar M.O.R</DropdownMenuItem>
           </div>
           <div className="hover:bg-[#2A2A2A]">
-            <DropdownMenuItem className="cursor-pointer" onClick={() => setRemoveMor((prev: any) => [...prev, playerData])} ><Plus /> Remover M.O.R</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setRemoveMor((prev: any) => [...prev, playerData])} ><X /> Remover M.O.R</DropdownMenuItem>
           </div>
           <div className="hover:bg-[#2A2A2A]">
             <DropdownMenuItem className="cursor-pointer" onClick={openEditDialog}><Pencil /> Editar Player</DropdownMenuItem>
