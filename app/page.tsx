@@ -19,7 +19,6 @@ const koch = localFont({
   weight: '100',
 });
 
-// Função para buscar todos os dados de ranking
 const fetchAllTimeData = async () => {
   const response = await fetch('/api/getAllTimeData');
   if (!response.ok) {
@@ -28,7 +27,6 @@ const fetchAllTimeData = async () => {
   return response.json();
 };
 
-// Função para buscar os detalhes de cada jogador
 const fetchPlayerDetails = async (player: any) => {
   const { nick } = player;
   const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
