@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Inter } from "next/font/google";
-import { QueryClientProvider } from "@tanstack/react-query";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
 
 const inter = Inter({

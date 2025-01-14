@@ -144,7 +144,7 @@ export default function Dungeons() {
           return response.data;
         }
       } catch (error) {
-        console.error(`Erro na tentativa ${i + 1}:`, error);
+        console.log(`Erro na tentativa ${i + 1}:`, error);
         if (i === retries - 1) throw error;
       }
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -313,6 +313,7 @@ export default function Dungeons() {
           />
           <span className="text-base font-medium text-neutral-200">
             {role.label}
+            {players.length > 0 && ` (${players.length})`}
           </span>
         </div>
         <div className="flex-grow overflow-y-auto max-h-72">

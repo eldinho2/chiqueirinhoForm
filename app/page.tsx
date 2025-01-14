@@ -19,6 +19,7 @@ const koch = localFont({
   weight: '100',
 });
 
+// Função para buscar todos os dados de ranking
 const fetchAllTimeData = async () => {
   const response = await fetch('/api/getAllTimeData');
   if (!response.ok) {
@@ -27,29 +28,34 @@ const fetchAllTimeData = async () => {
   return response.json();
 };
 
+// Função para buscar os detalhes de cada jogador
 const fetchPlayerDetails = async (player: any) => {
   const { nick } = player;
-  try {
-    const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
-    const playerId = await playerIdResponse.json();
+  const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
+  const playerId = await playerIdResponse.json();
 
-    const playerDataResponse = await fetch(`/api/getUserProfile/${playerId}`);
-    const playerData = await playerDataResponse.json();
+  const playerDataResponse = await fetch(`/api/getUserProfile/${playerId}`);
+  const playerData = await playerDataResponse.json();
 
-    return { ...player, playerData };
-  } catch {
-    return { ...player, playerData: { icon: '/chiqueirinhologo.webp' } };
-  }
+  return { ...player, playerData };
 };
 
 export default function Home() {
   const [activeLeaderboard, setActiveLeaderboard] = useState('total');
-  const [playersDataWithDetails, setPlayersDataWithDetails] = useState<any[]>([]);
-  const [isLoadingWithTimeOut ,setIsLoadingWithTimeOut] = useState(true);
 
-  const { data: weekData, isLoading, isError, error } = useQuery({
+  const { data: weekData, isError } = useQuery({
     queryKey: ['playersAllTimeData'],
     queryFn: fetchAllTimeData,
+  });
+
+  const { data: playersDataWithDetails = [], isFetching, isLoading } = useQuery({
+    queryKey: ['playersDetails', weekData],
+    queryFn: async () => {
+      if (!weekData) return [];
+      const sortedPlayers = processPlayerStats(weekData);
+      return Promise.all(sortedPlayers.map(fetchPlayerDetails));
+    },
+    enabled: !!weekData,
   });
 
   const getEloInfo = useCallback((points: number) => {
@@ -84,27 +90,7 @@ export default function Home() {
     return role?.icon || '/chiqueirinhologo.webp';
   }, []);
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      if (!weekData) return;
-      const sortedPlayers = processPlayerStats(weekData);
-
-      try {
-        const playersWithDetails = await Promise.all(
-          sortedPlayers.map((player: any) => fetchPlayerDetails(player))
-        );
-        setPlayersDataWithDetails(playersWithDetails);
-      } catch (error) {
-        console.error('Erro ao buscar detalhes dos jogadores:', error);
-        setPlayersDataWithDetails(sortedPlayers);
-      }
-    };
-
-    fetchDetails();
-  }, [weekData]);
-
   const enhancedPlayers = useMemo(() => {
-    if (!playersDataWithDetails) return [];
     return playersDataWithDetails.map((player: any) => ({
       ...player,
       eloInfo: getEloInfo(player.playerData?.highestStats?.roleWhithMorePoints?.points || 0),
@@ -112,16 +98,6 @@ export default function Home() {
       highestRoleIcon: getRoleIcon(player.playerData?.highestStats?.roleWhithMorePoints?.role || ''),
     }));
   }, [playersDataWithDetails, getEloInfo, getRoleIcon]);
-
-  if (isError) return <div>Error: {error?.message || 'Failed to load data'}</div>;
-
-  useEffect(() => {
-    if (isLoading) {
-    setTimeout(() => {
-      setIsLoadingWithTimeOut(false);
-    }, 1500);
-  }
-  }, []);
 
   return (
     <div className="min-h-screen">
@@ -135,55 +111,55 @@ export default function Home() {
         >
           Chiqueirinho Avaloniano
         </motion.h1>
-        {isLoadingWithTimeOut ? (
+        {isFetching ? (
           <Loading />
         ) : (
           <>
-        <motion.div
-          className="flex justify-center space-x-4 mb-8"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Button
-            onClick={() => setActiveLeaderboard('total')}
-            variant="outline"
-            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-              activeLeaderboard === 'total' ? 'bg-zinc-400' : ''
-            }`}
-          >
-            Pontos Totais
-          </Button>
-          <Button
-            onClick={() => setActiveLeaderboard('role')}
-            variant="outline"
-            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-              activeLeaderboard === 'role' ? 'bg-zinc-400' : ''
-            }`}
-          >
-            Pontos por Role
-          </Button>
-          <Button
-            onClick={() => setActiveLeaderboard('highestElos')}
-            variant="outline"
-            className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-              activeLeaderboard === 'highestElos' ? 'bg-zinc-400' : ''
-            }`}
-          >
-            Jogadores com maior Elo
-          </Button>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="text-sm"
-        >
-          {activeLeaderboard === 'total' && <Leaderboard players={enhancedPlayers} />}
-          {activeLeaderboard === 'role' && <RoleLeaderboard players={enhancedPlayers} />}
-          {activeLeaderboard === 'highestElos' && <HighestEloLeaderboard players={enhancedPlayers} />}
-        </motion.div>
-        </>
+            <motion.div
+              className="flex justify-center space-x-4 mb-8"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Button
+                onClick={() => setActiveLeaderboard('total')}
+                variant="outline"
+                className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+                  activeLeaderboard === 'total' ? 'bg-zinc-400' : ''
+                }`}
+              >
+                Pontos Totais
+              </Button>
+              <Button
+                onClick={() => setActiveLeaderboard('role')}
+                variant="outline"
+                className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+                  activeLeaderboard === 'role' ? 'bg-zinc-400' : ''
+                }`}
+              >
+                Pontos por Role
+              </Button>
+              <Button
+                onClick={() => setActiveLeaderboard('highestElos')}
+                variant="outline"
+                className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
+                  activeLeaderboard === 'highestElos' ? 'bg-zinc-400' : ''
+                }`}
+              >
+                Jogadores com maior Elo
+              </Button>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="text-sm"
+            >
+              {activeLeaderboard === 'total' && <Leaderboard players={enhancedPlayers} />}
+              {activeLeaderboard === 'role' && <RoleLeaderboard players={enhancedPlayers} />}
+              {activeLeaderboard === 'highestElos' && <HighestEloLeaderboard players={enhancedPlayers} />}
+            </motion.div>
+          </>
         )}
       </main>
     </div>
