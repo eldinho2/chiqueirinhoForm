@@ -331,6 +331,7 @@ export default function Dungeons() {
                         role={role}
                         dungeonsDetails={dungeonsDetails}
                         eventId={eventId}
+                        setRemoveMor={setRemoveMor as any}
                       />
                       <span className="text-sm text-neutral-400">
                         {String(index + 1).padStart(2, "0")}

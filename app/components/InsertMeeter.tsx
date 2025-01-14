@@ -124,11 +124,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
     setMissingPlayers(playersIntrusos as any);
 
-    // Encontra a linha correta considerando o número no início e o nick
     const line = normalizedInput
       .split("\n")
       .find((line) => {
-        // Garante que a linha começa com número e ponto (1., 2., etc.)
         const startsWithNumber = /^\d+\.\s/.test(line);
         return startsWithNumber && line.includes(`${normalizedNick}:`);
       });
@@ -460,7 +458,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     setIsSaving(false);
     setActiveTab(0);
     setIsDialogOpen(false);
-    handleClearDungeon();
+    //handleClearDungeon();
   };
 
   const fadeIn = {

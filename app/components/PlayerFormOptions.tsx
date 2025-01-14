@@ -49,9 +49,10 @@ interface PlayerFormOptionsProps {
   role: Role;
   dungeonsDetails: DungeonDetails[];
   eventId: string;
+  setRemoveMor: any;
 }
 
-export default function PlayerFormOptions({ player, role, dungeonsDetails, eventId }: PlayerFormOptionsProps) {
+export default function PlayerFormOptions({ player, role, dungeonsDetails, eventId, setRemoveMor }: PlayerFormOptionsProps) {
   const morList = dungeonsDetails?.length > 0 ? dungeonsDetails[0].morList : [];
 
   const playerData: PlayerData = {
@@ -163,6 +164,9 @@ export default function PlayerFormOptions({ player, role, dungeonsDetails, event
         <DropdownMenuContent className="w-full bg-black flex flex-col gap-2">
           <div className="hover:bg-[#2A2A2A]">
             <DropdownMenuItem className="cursor-pointer" onClick={() => handleAddToMorList(playerData)} ><Plus /> Adicionar M.O.R</DropdownMenuItem>
+          </div>
+          <div className="hover:bg-[#2A2A2A]">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setRemoveMor((prev: any) => [...prev, playerData])} ><Plus /> Remover M.O.R</DropdownMenuItem>
           </div>
           <div className="hover:bg-[#2A2A2A]">
             <DropdownMenuItem className="cursor-pointer" onClick={openEditDialog}><Pencil /> Editar Player</DropdownMenuItem>
