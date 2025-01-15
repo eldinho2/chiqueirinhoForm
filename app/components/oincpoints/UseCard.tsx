@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import EditPointsDialog from "./EditPointsDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react";
+import { Toaster } from "@/components/ui/toaster"
 
 interface UserCardProps {
   nickname: string;
@@ -14,7 +15,9 @@ interface UserCardProps {
 
 export default function UserCard({ nickname, username, oincPoints, image, onPointsUpdate }: UserCardProps) {
   const { data: session, status } = useSession();
+
   const { toast } = useToast();
+
   const fallbackImage = "/chiqueirinhologo.webp";
 
   const handlePointsUpdate = async (newPoints: number) => {
@@ -22,13 +25,13 @@ export default function UserCard({ nickname, username, oincPoints, image, onPoin
       await onPointsUpdate(newPoints);
       console.log(`os pontos do usuario ${nickname} foram alterados de ${oincPoints} para ${newPoints} por: ${session?.user?.nick}(${session?.user?.username})`);
       toast({
-        title: "Points Updated",
-        description: `Successfully updated points for ${nickname} from ${oincPoints} to ${newPoints}`,
+        title: "Pontos atualizados 🤩",
+        description: `Os pontos do usuario ${nickname} foram atualizados de ${oincPoints} para ${newPoints}`,
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update points",
+        title: "Erro",
+        description: "Falha ao atualizar pontos",
         variant: "destructive",
       });
     }
@@ -36,14 +39,15 @@ export default function UserCard({ nickname, username, oincPoints, image, onPoin
 
   return (
     <Card className="w-full bg-secondary border-none">
-      <CardContent className="p-6 flex items-center gap-4">
-        <Avatar className="h-16 w-16">
+      <Toaster />
+      <CardContent className="p-4 flex items-center gap-2">
+        <Avatar className="h-8 w-8">
           <AvatarImage src={image || fallbackImage} alt={nickname} />
           <AvatarFallback>{nickname[0]}</AvatarFallback>
         </Avatar>
         <div className="flex justify-between items-center w-full">
           <div className="">
-            <h3 className="text-lg font-semibold">{nickname}</h3>
+            <h3 className="text-base font-semibold">{nickname}</h3>
             {username && <p className="text-sm text-muted-foreground">@{username}</p>}
           </div>
           <div className="flex flex-col items-center justify-end">
@@ -52,7 +56,7 @@ export default function UserCard({ nickname, username, oincPoints, image, onPoin
               currentPoints={oincPoints}
               onSave={handlePointsUpdate}
             />
-            <h3 className="text-lg font-semibold">Oinc Points: {oincPoints} 💰</h3>
+            <h3 className="text-sm font-semibold">Oinc Points: {oincPoints} 💰</h3>
           </div>
         </div>
       </CardContent>

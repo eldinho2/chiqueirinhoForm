@@ -1,37 +1,81 @@
 'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import UserCard from "@/app/components/oincpoints/UseCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Loading from "@/utils/Loading";
 
 export default function OincPoints() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortByPoints, setSortByPoints] = useState(true);
 
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 1000);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
   const fetchOincPoints = async () => {
-    const response = await fetch('/api/getOincPoints');
+    const response = await fetch("/api/getOincPoints");
     const data = await response.json();
     return data;
   };
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['oincPoints'],
+    queryKey: ["oincPoints"],
     queryFn: fetchOincPoints,
   });
 
   const handlePointsUpdate = async (nickname: string, oldPoints: number, newPoints: number) => {
     console.log(`User ${nickname} points updated from ${oldPoints} to ${newPoints}`);
+
+    try {
+      const response = await fetch("/api/updateOincPoints", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nickname, oldPoints, newPoints }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update points");
+      }
+
+      const cached = queryClient.getQueryData(["oincPoints"]) as any;
+      if (cached) {
+        queryClient.setQueryData(["oincPoints"], {
+          ...cached,
+          users: cached.users.map((user: any) => {
+            if (user.nickname === nickname) {
+              return {
+                ...user,
+                oincPoints: newPoints,
+              };
+            }
+            return user;
+          }),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating points:", error);
+    }
   };
 
   const filteredAndSortedUsers = data?.users
     ?.filter((user: any) =>
-      user.nickname.toLowerCase().includes(search.toLowerCase())
+      user.nickname.toLowerCase().includes(debouncedSearch.toLowerCase())
     )
     .sort((a: any, b: any) => {
       if (sortByPoints) {
@@ -45,11 +89,11 @@ export default function OincPoints() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-6xl text-center mb-8">Oinc Points</h1>
-        
+
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <Input
-              placeholder="Search by nickname..."
+              placeholder="Procurar por nickname..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs"
@@ -61,7 +105,7 @@ export default function OincPoints() {
                 id="sort-mode"
               />
               <Label htmlFor="sort-mode">
-                Sort by {sortByPoints ? "points" : "name"}
+                Ordenar por {sortByPoints ? "pontos" : "nick"}
               </Label>
             </div>
           </div>
@@ -77,11 +121,15 @@ export default function OincPoints() {
                   <UserCard
                     key={user.nickname}
                     {...user}
-                    onPointsUpdate={(points: number) => handlePointsUpdate(user.nickname, user.oincPoints, points)}
+                    onPointsUpdate={(points: number) =>
+                      handlePointsUpdate(user.nickname, user.oincPoints, points)
+                    }
                   />
                 ))
               ) : (
-                <p className="text-center text-muted-foreground">Nenhum usuario encontrado</p>
+                <p className="text-center text-muted-foreground">
+                  Nenhum usuário encontrado
+                </p>
               )}
             </div>
           )}
