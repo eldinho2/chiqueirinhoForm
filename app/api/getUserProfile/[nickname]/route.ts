@@ -23,14 +23,15 @@ function isValidPlayer(player: any): player is Player {
 
 export async function GET(request: NextRequest) {
   try {
-    const profileId = request.nextUrl.pathname.split('/').pop() || '';
+    const nickname = request.nextUrl.pathname.split('/').pop()?.toLowerCase() || '';
 
-    if (!profileId) {
-      return NextResponse.json({ error: "Profile ID is required" }, { status: 400 });
+    if (!nickname) {
+      return NextResponse.json({ error: "nickname is required" }, { status: 400 });
     }
 
     const user = await prisma.users.findUnique({
-      where: { userID: profileId },
+      where: { nickname },
+      select: { id: true, userID: true, username: true, email: false, nickname: true, oincPoints: true, image: true, banner: true, role: true, createdAt: true, updatedAt: true },
     });
 
     if (!user) {
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
     allDungeons.forEach(dungeon => {
       const players = dungeon.players.filter((player: any) => {
         if (!isValidPlayer(player)) return false;
-        return player.nick.toLowerCase() === user.name.toLowerCase();
+        return player.nick.toLowerCase() === user.nickname.toLowerCase();
       });
 
       players.forEach(player => {

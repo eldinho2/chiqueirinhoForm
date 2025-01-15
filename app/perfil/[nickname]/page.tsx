@@ -8,10 +8,9 @@ import Loading from "@/utils/Loading";
 import { roles } from '@/lib/roles'
 import Image from "next/image";
 import { EloPanel } from "@/app/components/profile/EloPanel";
-import ErrorPage from "@/utils/ErrorPage";
 
 export default function ProfileComponent() {
-  const { profileId } = useParams()
+  const { nickname } = useParams()
   
   interface Profile {
     user: {
@@ -19,7 +18,7 @@ export default function ProfileComponent() {
       userID: string;
       banner?: string;
       image?: string;
-      name?: string;
+      nickname?: string;
       username?: string;
       profilename?: string;
       email?: string; 
@@ -58,15 +57,15 @@ export default function ProfileComponent() {
     
   useEffect(() => {
     const fetchDungeons = async () => {
-      if (profileId) {
-        const response = await fetch(`/api/getUserProfile/${profileId}`)
+      if (nickname) {
+        const response = await fetch(`/api/getUserProfile/${nickname}`)
         const data = await response.json()
         setProfile(data)
         setIsLoading(false)
       }
     }
     fetchDungeons()
-  }, [profileId])      
+  }, [nickname])      
 
   const bannerUrl = profile?.user?.banner ? `https://cdn.discordapp.com/banners/${profile.user.userID}/${profile.user.banner}.gif?size=480` : null;
 
@@ -83,7 +82,7 @@ export default function ProfileComponent() {
     });
   };
 
-  const nicknamenormalized = profile?.user?.name?.charAt(0).toUpperCase() as any + profile?.user?.name?.slice(1);
+  const nicknamenormalized = profile?.user?.nickname?.charAt(0).toUpperCase() as any + profile?.user?.nickname?.slice(1);
 
   const NoDataMessage = () => (
     <div className="flex flex-col items-center justify-center p-8 text-center">

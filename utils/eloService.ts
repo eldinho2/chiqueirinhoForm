@@ -12,17 +12,12 @@ const eloService = async (formatedData: PlayerData[]) => {
   for (const player of formatedData) {
     const { nick, role } = player;
 
-    try {
-      const userIdResponse = await fetch(`/api/getUserId/${nick}`);
-      if (!userIdResponse.ok) {
-        console.error(`Failed to fetch userId for ${nick}: ${userIdResponse.statusText}`);
-        continue;
-      }
-      const userId = await userIdResponse.json();
 
-      const userProfileResponse = await fetch(`/api/getUserProfile/${userId}`);
+
+    try {
+      const userProfileResponse = await fetch(`/api/getUserProfile/${nick.toLowerCase()}`);
       if (!userProfileResponse.ok) {
-        console.error(`Failed to fetch profile for userId ${userId}: ${userProfileResponse.statusText}`);
+        console.error(`Failed to fetch profile for nick ${nick}: ${userProfileResponse.statusText}`);
         continue;
       }
       const userProfile = await userProfileResponse.json();

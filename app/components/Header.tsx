@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
-import { User, LogOut, LayoutDashboard, Search } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, Search, DollarSign } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { redirect } from "next/navigation";
@@ -14,7 +14,7 @@ import { admins } from '@/lib/admins'
 
 interface SearchResult {
   userID: string;
-  name: string;
+  nickname: string;
   username: string;
   image: string;
 }
@@ -34,7 +34,7 @@ export default function Header() {
     delay: number
   ): ((...args: Args) => void) => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
     const debouncedFunction = useCallback(
       (...args: Args) => {
         if (timeoutRef.current) {
@@ -46,7 +46,7 @@ export default function Header() {
       },
       [func, delay]
     );
-  
+
     return debouncedFunction;
   };
 
@@ -112,7 +112,7 @@ export default function Header() {
 
   if (isLoading || status === 'loading') {
     return null;
-  }  
+  }
 
   return (
     <header className="bg-[#2A2A2A] border-b border-[#3A3A3A] text-white">
@@ -152,18 +152,18 @@ export default function Header() {
                 searchResults.map((player) => (
                   <Link
                     key={uuidv4()}
-                    href={`/perfil/${player.userID}`}
+                    href={`/perfil/${player.nickname}`}
                     className="flex items-center px-4 py-2 hover:bg-[#4A4A4A] transition-colors duration-150"
                   >
                     <Image
                       src={player.image || "/chiqueirinhologo.webp"}
-                      alt={`${player.name}'s avatar`}
+                      alt={`${player.nickname}'s avatar`}
                       width={32}
                       height={32}
                       className="rounded-full mr-3"
                     />
                     <div>
-                      <p className="font-semibold">{player.name}</p>
+                      <p className="font-semibold">{player.nickname}</p>
                       <p className="text-sm text-gray-400">@{player.username}</p>
                     </div>
                   </Link>
@@ -181,11 +181,18 @@ export default function Header() {
               </Button>
             </Link>
           )}
-
+          {admins.includes(session?.user?.role as any) && session?.user?.role !== 'Ajudante ‍⚖️' && (
+            <Link href="/oincpoints">
+              <Button variant="ghost" size="sm" className="text-white">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Oinc Points
+              </Button>
+            </Link>
+          )}
           {session?.user ? (
             <>
               <Link
-                href={`/perfil/${session.user.id}`}
+                href={`/perfil/${session.user.nick}`}
                 className="flex items-center gap-2"
               >
                 {session.user.image ? (
@@ -197,7 +204,7 @@ export default function Header() {
                     className="rounded-full"
                   />
                 ) : (
-                    <Button
+                  <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleLogin}

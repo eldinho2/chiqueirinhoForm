@@ -18,12 +18,11 @@ model Users {
   userID    String   @unique
   username  String?
   email     String?
-  name      String   @unique
-  nickname  String?
+  nickname  String   @unique
   image     String?
   banner    String?
-  password  String?
   role      String
+  oincPoints Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

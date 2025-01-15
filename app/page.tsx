@@ -29,10 +29,10 @@ const fetchAllTimeData = async () => {
 
 const fetchPlayerDetails = async (player: any) => {
   const { nick } = player;
-  const playerIdResponse = await fetch(`/api/getUserId/${nick}`);
-  const playerId = await playerIdResponse.json();
 
-  const playerDataResponse = await fetch(`/api/getUserProfile/${playerId}`);
+  const nickname = nick.toLowerCase();
+
+  const playerDataResponse = await fetch(`/api/getUserProfile/${nickname}`);
   const playerData = await playerDataResponse.json();
 
   return { ...player, playerData };

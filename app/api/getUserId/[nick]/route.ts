@@ -9,7 +9,7 @@ export async function GET(
 
     const user = await prisma.users.findUnique({
       where: {
-        name: nickname.toString().toLowerCase()
+        nickname: nickname.toString().toLowerCase()
       }
     })    
 

@@ -21,15 +21,15 @@ export async function GET(
     const searchResults = await prisma.users.findMany({
       where: {
         OR: [
-          { name: { startsWith: query, mode: 'insensitive' } },
+          { nickname: { startsWith: query, mode: 'insensitive' } },
           { username: { startsWith: query, mode: 'insensitive' } },
-          { name: { contains: query, mode: 'insensitive' } },
+          { nickname: { contains: query, mode: 'insensitive' } },
           { username: { contains: query, mode: 'insensitive' } },
         ],
       },
       select: {
         userID: true,
-        name: true,
+        nickname: true,
         username: true,
         image: true,
       },
@@ -37,9 +37,9 @@ export async function GET(
     });
 
     const sortedResults = searchResults.sort((a, b) => {
-      const aPriority = a.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
+      const aPriority = a.nickname.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
                         a.username?.toLowerCase().startsWith(query.toLowerCase()) ? 2 : 3;
-      const bPriority = b.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
+      const bPriority = b.nickname.toLowerCase().startsWith(query.toLowerCase()) ? 1 :
                         b.username?.toLowerCase().startsWith(query.toLowerCase()) ? 2 : 3;
       return aPriority - bPriority;
     });

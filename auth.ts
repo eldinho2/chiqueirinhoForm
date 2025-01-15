@@ -9,7 +9,6 @@ interface ProfileInterface {
   id: string;
   username: string;
   email: string;
-  name: string;
   global_name: string;
   image_url: string;
   banner: string;
@@ -40,9 +39,9 @@ async function findOrCreateUser(profile: ProfileInterface) {
 
     console.log('=========================data', data);
     
-    const nickName = data.nickname.toLowerCase();
+    const nickname = data.nickname.toLowerCase();
 
-    if (!nickName) {
+    if (!nickname) {
       throw new Error('Nickname não encontrado');
     }
 
@@ -51,7 +50,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
     }
 
     let user = await prisma.users.findUnique({
-      where: { name: nickName },
+      where: { nickname },
     });
 
     let role: string | null = null;
@@ -71,8 +70,8 @@ async function findOrCreateUser(profile: ProfileInterface) {
           userID: profile.id,
           username: profile.username,
           email: profile.email,
-          name: nickName.toLowerCase(),
-          nickname: nickName.toLowerCase(),
+          nickname: nickname.toLowerCase(),
+          oincPoints: 0,
           image: profile.image_url,
           banner: profile.banner,
           role: role || 'user',
@@ -80,13 +79,12 @@ async function findOrCreateUser(profile: ProfileInterface) {
       });
     } else {
       user = await prisma.users.update({
-        where: { name: nickName },
+        where: { nickname },
         data: {
           userID: profile.id,
           username: profile.username,
           email: profile.email,
-          name: nickName.toLowerCase(),
-          nickname: nickName.toLowerCase(),
+          nickname: nickname.toLowerCase(),
           image: profile.image_url,
           banner: profile.banner,
           role: role || 'user',
@@ -125,7 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           
           user.role = dbProfile.role;
           user.nickname = dbProfile.nickname;
-          user.nick = dbProfile.name;
+          user.nick = dbProfile.nickname;
 
           return true;
         } catch (error) {

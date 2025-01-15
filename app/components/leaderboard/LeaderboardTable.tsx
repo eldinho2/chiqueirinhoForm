@@ -53,7 +53,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                     height={32}
                     className="rounded-full"
                   />
-                  <Link className='text-sm' href={`/perfil/${player.playerData?.user?.userID}`}>{player.nick}</Link>
+                  <Link className='text-sm' href={`/perfil/${player.playerData?.user?.nickname}`}>{player.nick}</Link>
                 </td>
                 <td className="px-4 py-3">{player.totalPoints.toLocaleString()}</td>
                 <td className="px-4 py-3">
