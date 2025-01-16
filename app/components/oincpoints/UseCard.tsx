@@ -24,7 +24,6 @@ export default function UserCard({ nickname, username, oincPoints, image, onPoin
   const handlePointsUpdate = async (newPoints: number) => {
     try {
       await onPointsUpdate(newPoints);
-      console.log(`os pontos do usuario ${nickname} foram alterados de ${oincPoints} para ${newPoints} por: ${session?.user?.nick}(${session?.user?.username})`);
       toast({
         title: "Pontos atualizados 🤩",
         description: `Os pontos do usuario ${nickname} foram atualizados de ${oincPoints} para ${newPoints}`,

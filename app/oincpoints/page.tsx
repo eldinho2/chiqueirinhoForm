@@ -8,8 +8,11 @@ import UserCard from "@/app/components/oincpoints/UseCard";
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Loading from "@/utils/Loading";
+import { useSession } from "next-auth/react";
 
 export default function OincPoints() {
+  const { data: session, status } = useSession();
+
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortByPoints, setSortByPoints] = useState(true);
@@ -38,6 +41,7 @@ export default function OincPoints() {
   });
 
   const handlePointsUpdate = async (nickname: string, oldPoints: number, newPoints: number) => {
+    
     console.log(`User ${nickname} points updated from ${oldPoints} to ${newPoints}`);
 
     try {
@@ -47,6 +51,17 @@ export default function OincPoints() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ nickname, oldPoints, newPoints }),
+      });
+
+      console.log(process.env.NEXT_PUBLIC_BOT_BACKEND_URL);
+      
+
+      await fetch(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/logs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: `Os oinc Points do usuario ${nickname} foram alterados de ${oldPoints} para ${newPoints} por: ${session?.user?.nick}(${session?.user?.username})` }),
       });
 
       if (!response.ok) {
