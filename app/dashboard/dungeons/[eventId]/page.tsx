@@ -8,7 +8,7 @@ import useSWR from "swr";
 import Image from "next/image";
 import { roles } from "@/lib/roles";
 import { InsertMeeter } from "@/app/components/InsertMeeter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PlayerFormOptions from "@/app/components/PlayerFormOptions";
 import MorList from "@/app/components/party/MorList";
 import MyParty from "@/app/components/party/MyParty";
@@ -18,6 +18,7 @@ import axios from "axios";
 import { CheckCheck, Clipboard } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
+import PlayersWithMorInAnotherDg from "@/app/components/party/PlayersWithMorInAnotherDg";
 
 interface Role {
   value: string;
@@ -44,6 +45,7 @@ export default function Dungeons() {
   const eventId = params?.eventId as string;
   const [myParty, setMyParty] = useState<MyParty[]>([]);
   const [removeMor, setRemoveMor] = useState<MyParty[]>([]);
+  const [playersWithMorInAnotherRole, setPlayersWithMorInAnotherRole] = useState<PlayerData[]>([]);
   const [isProcessingAdd, setIsProcessingAdd] = useState(false);
   const [isProcessingRemove, setIsProcessingRemove] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -68,8 +70,8 @@ export default function Dungeons() {
   
           playerRoleMap.push({ nick, role, hasMor: true });
         }
-      }
-  
+      }      
+
       setfetchPlayersWithMor(playerRoleMap as any);
     }
   }, [messages]);
@@ -115,6 +117,16 @@ export default function Dungeons() {
         roleIcon: roles.find((r) => r.value === Object.keys(role)[0])?.icon
       }))
     );
+
+    const playersInDungeonWithMorInAnotherRole = fetchPlayersWithMor.filter((player) => {
+      return allPlayersInDungeon.some(
+        (dungeonPlayer) =>
+          dungeonPlayer.nick.toLowerCase() === player.nick.toLowerCase() &&
+          dungeonPlayer.role.toLowerCase() !== player.role.toLowerCase()
+      );
+    })
+  
+    setPlayersWithMorInAnotherRole(playersInDungeonWithMorInAnotherRole);
   
     const playersWithMorInDungeon = allPlayersInDungeon.filter((player) =>
       fetchPlayersWithMor.some(
@@ -419,7 +431,7 @@ export default function Dungeons() {
         </div>
 
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:justify-center">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {roles.map(renderPlayerSlot)}
           </div>
 
@@ -430,7 +442,7 @@ export default function Dungeons() {
               </h2>
               <MyParty myParty={myParty} setMyParty={setMyParty} />
             </section>
-            <div className="flex">
+            <div className="flex justify-center">
               <section className="flex flex-col items-center">
                 <h2 className="mb-4 text-2xl font-bold">Lista de M.O.R</h2>
                 <button
@@ -457,9 +469,27 @@ export default function Dungeons() {
                 >
                   {isProcessingRemove ? "Removendo..." : "Remover M.O.R"}
                 </button>
-                <RemoveMorList removeMorList={removeMor} />
+                <RemoveMorList removeMorList={removeMor as any} />
               </section>
             </div>
+            <section className="flex flex-col items-center">
+            <h1 className="mb-4 text-2xl font-bold">Jogadores na dg com Mor em outras Roles</h1>
+              <button
+                  className={`mb-4 px-2 py-2 border text-white rounded-lg ${isProcessingRemove ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  onClick={() => handleRemoveMor(playersWithMorInAnotherRole as PlayerData[])}
+                  disabled={isProcessingRemove}
+                >
+                  {isProcessingRemove ? "Removendo..." : "Remover M.O.R"}
+                </button>
+              {
+                playersWithMorInAnotherRole && playersWithMorInAnotherRole.length > 0 ? (
+                  <PlayersWithMorInAnotherDg PlayersWithMorInAnotherDg={playersWithMorInAnotherRole} />
+                ) : (
+                  <p className="text-gray-400">Nenhum jogador com M.O.R em outra Role</p>
+                )
+              }
+            </section>
           </div>
         </div>
       </main>

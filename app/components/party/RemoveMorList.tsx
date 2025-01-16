@@ -1,3 +1,7 @@
+'use client';
+
+import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 import { PlayerList } from "./PlayerList";
 import { PlayerCard } from "./PlayerCard";
 
@@ -9,22 +13,41 @@ interface Player {
 }
 
 interface RemoveMorListProps {
-  removeMorList: any;
+  removeMorList: Player[];
 }
 
 export default function RemoveMorList({ removeMorList }: RemoveMorListProps) {
-  console.log(removeMorList);
-  
+  const [filteredRemoveMorListMorList, setFilteredRemoveMorListMorList] = useState<Player[]>([]);
+
+  useEffect(() => {
+    setFilteredRemoveMorListMorList(removeMorList || []);
+  }, [removeMorList]);
+
+  const removeFromRemoveMorList = (playerNick: string, playerRole: string, playerIp: string) => {
+    setFilteredRemoveMorListMorList(prev => 
+      prev.filter(player => 
+        !(player.nick === playerNick && 
+          player.role === playerRole && 
+          player.ip === playerIp)
+      )
+    );
+  };
+
   return (
     <PlayerList>
-      {removeMorList?.map((player: Player) => (
-        <PlayerCard
-          key={`${player.nick}-${player.role}-${player.ip}`}
-          nick={player.nick}
-          role={player.role}
-          roleIcon={player.roleIcon}
-        />
-      ))}
+      {filteredRemoveMorListMorList.length > 0 ? (
+        filteredRemoveMorListMorList.map((player: Player) => (
+          <PlayerCard
+            key={`${player.nick}-${player.role}-${player.ip}`}
+            nick={player.nick}
+            role={player.role}
+            roleIcon={player.roleIcon}
+            onRemove={() => removeFromRemoveMorList(player.nick, player.role, player.ip)}
+          />
+        ))
+      ) : (
+        <p>Nenhum jogador na lista</p>
+      )}
     </PlayerList>
   );
 }

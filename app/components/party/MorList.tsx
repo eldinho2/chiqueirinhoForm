@@ -56,15 +56,20 @@ export default function MorList({ eventId, morList }: MorListProps) {
     <div>
       <Toaster />
       <PlayerList>
-        {morList?.map((player) => (
-          <PlayerCard
-            key={`${player.nick}-${player.role}-${player.ip}`}
-            nick={player.nick}
-            role={player.role}
-            roleIcon={player.roleIcon}
-            onRemove={() => removeFromMorList(player.nick, player.role, player.ip)}
-          />
-        ))}
+        {morList?.length > 0 ? (
+          morList.map((player: Player) => (
+            <PlayerCard
+              key={`${player.nick}-${player.role}-${player.ip}`}
+              nick={player.nick}
+              role={player.role}
+              roleIcon={player.roleIcon}
+              onRemove={() => removeFromMorList(player.nick, player.role, player.ip)}
+            />
+          ))
+        ) : (
+          <p>Lista de moradores vazia.</p>
+        )
+        }
       </PlayerList>
     </div>
   );

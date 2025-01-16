@@ -8,6 +8,7 @@ import Loading from "@/utils/Loading";
 import { roles } from '@/lib/roles'
 import Image from "next/image";
 import { EloPanel } from "@/app/components/profile/EloPanel";
+import Link from 'next/link'
 
 export default function ProfileComponent() {
   const { nickname } = useParams()
@@ -20,6 +21,7 @@ export default function ProfileComponent() {
       image?: string;
       nickname?: string;
       username?: string;
+      oincPoints?: number;
       profilename?: string;
       email?: string; 
     },
@@ -134,7 +136,10 @@ export default function ProfileComponent() {
                   <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
                     {nicknamenormalized || "Unknown Adventurer"}
                   </h1>
+                  <div className="flex flex-col gap-2">
                   <p className="text-gray-400 text-sm">Pontos totais: {profile?.highestStats?.totalPoints || 0}</p>
+                  <Link href="https://discord.com/channels/981374767464587264/1298147257182589051" className="text-gray-400 text-sm">Oinc Points: {profile?.user?.oincPoints || 0} 💰</Link>
+                  </div>
                 </div>
                 <p className="text-gray-400 text-base">@{profile?.user?.username || "username"}</p>
               </div>
