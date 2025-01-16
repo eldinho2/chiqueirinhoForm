@@ -22,6 +22,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (currentPath.startsWith("/oincpoints")) {
+    if (!session || role !== "admin") {
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
