@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react";
 import { Toaster } from "@/components/ui/toaster"
+import Link from "next/link";
 
 interface UserCardProps {
   nickname: string;
@@ -46,10 +47,10 @@ export default function UserCard({ nickname, username, oincPoints, image, onPoin
           <AvatarFallback>{nickname[0]}</AvatarFallback>
         </Avatar>
         <div className="flex justify-between items-center w-full">
-          <div className="">
+          <Link href={`/perfil/${nickname}`} className="">
             <h3 className="text-base font-semibold">{nickname}</h3>
             {username && <p className="text-sm text-muted-foreground">@{username}</p>}
-          </div>
+          </Link>
           <div className="flex flex-col items-center justify-end">
           <EditPointsDialog
               nickname={nickname}

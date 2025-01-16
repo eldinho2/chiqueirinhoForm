@@ -20,6 +20,7 @@ interface TopPlayerCardProps {
       highestStats: any
       user: {
         userID: string
+        nickname: string
         image: string
         highestStats: {
           roleWhithMorePoints: {
@@ -101,7 +102,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
             className='rounded-full border-2 border-zinc-700'
           />
           <div>
-            <Link href={`/perfil/${player.playerData?.user?.userID}`} className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</Link>
+            <Link href={`/perfil/${player.playerData?.user?.nickname}`} className="text-xl font-bold mb-1 text-zinc-100">{player.nick}</Link>
             <div className=" text-zinc-400 flex items-center gap-1">
               <Image
                 src={getRoleIcon(player.playerData?.highestStats?.mostFrequentRole) || '/chiqueirinhologo.webp'}
