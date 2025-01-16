@@ -127,6 +127,8 @@ export default function PlayerFormOptions({ player, role, dungeonsDetails, event
   };
 
   const handleEditPlayer = async (playerData: PlayerData) => {
+    console.log(playerData);
+    
     setLoading(true);
     try {
       const response = await fetch("/api/editPlayerInForms", {

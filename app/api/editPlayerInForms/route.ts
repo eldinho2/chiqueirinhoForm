@@ -45,6 +45,12 @@ export async function POST(request: Request) {
 
   const updatedRoles = dungeon.roles.map((role: { [x: string]: any; }) => {
     const roleKey = Object.keys(role)[0];
+    console.log(role[roleKey]);
+
+    if (!role[roleKey].ip) {
+      role[roleKey].ip = "0";
+    }
+    
     if (role[roleKey].nick === playerData.nick && role[roleKey].ip === playerData.ip) {
       return { [playerData.newRole]: { ...role[roleKey], nick: playerData.newNick } };
     }
