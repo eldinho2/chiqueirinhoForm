@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (currentPath.startsWith("/oincpoints")) {
-    if (!session || role !== "admin") {
+    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️") {      
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
