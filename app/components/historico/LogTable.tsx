@@ -76,9 +76,6 @@ export default function LogTable({ data }: any) {
     item.players.some(player => player.nick.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  console.log(filteredData);
-  
-
   return (
     <div className="space-y-6">
       <Toaster/>
