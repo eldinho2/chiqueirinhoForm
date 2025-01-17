@@ -28,6 +28,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (currentPath.startsWith("/historico")) {
+    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️") {      
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

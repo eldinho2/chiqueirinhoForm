@@ -51,10 +51,7 @@ export default function OincPoints() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ nickname, oldPoints, newPoints }),
-      });
-
-      console.log(process.env.NEXT_PUBLIC_BOT_BACKEND_URL);
-      
+      });      
 
       await fetch(`${process.env.NEXT_PUBLIC_BOT_BACKEND_URL}/logs`, {
         method: "POST",

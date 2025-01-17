@@ -189,6 +189,14 @@ export default function Header() {
               </Button>
             </Link>
           )}
+          {admins.includes(session?.user?.role as any) && session?.user?.role !== 'Ajudante ‍⚖️' && (
+            <Link href="/historico">
+              <Button variant="ghost" size="sm" className="text-white">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Histórico de DGs
+              </Button>
+            </Link>
+          )}
           {session?.user ? (
             <>
               <Link
