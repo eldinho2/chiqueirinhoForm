@@ -429,6 +429,13 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     setIsSaving(true);
     const totalPoints = calculateTotalPoints();
 
+    // se mais de ul player em totalpóints estiver com damage NaN, alerta
+    if (totalPoints.some((player) => isNaN(parseFloat(player.damage)))) {
+      alert("Ocorreu um erro ao salvar o dungeon. Aparentemente alguns jogadores possuem dados inválidos, como zero dano.");
+      setIsSaving(false);
+      return;
+    }
+
     const formatedData = totalPoints.map((player) => ({
       nick: player.nick,
       role: player.role,
@@ -445,20 +452,23 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       players: formatedData,
     };
 
-    await fetch("/api/insertDungeonHistory", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    console.log(data);
+    
 
-    eloService(formatedData);
+    //await fetch("/api/insertDungeonHistory", {
+    //  method: "POST",
+    //  headers: {
+    //    "Content-Type": "application/json",
+   //   },
+   //   body: JSON.stringify(data),
+   // });
 
-    setIsSaving(false);
-    setActiveTab(0);
-    setIsDialogOpen(false);
-    handleClearDungeon();
+   // eloService(formatedData);
+
+   // setIsSaving(false);
+   // setActiveTab(0);
+    ///setIsDialogOpen(false);
+    //handleClearDungeon();
   };
 
   const fadeIn = {
