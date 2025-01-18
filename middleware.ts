@@ -23,13 +23,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (currentPath.startsWith("/oincpoints")) {
-    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️") {      
+    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️" || role === "CALLER") {     
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
 
   if (currentPath.startsWith("/historico")) {
-    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️") {      
+    if (!session || !admins.includes(role) || role === "Ajudante ‍⚖️" || role === "CALLER") {     
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
