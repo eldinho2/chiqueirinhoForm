@@ -10,16 +10,10 @@ export const processPlayerStats = (dungeons: any[]) => {
         acc[key] = {
           nick: player.nick,
           totalPoints: 0,
-          roleDamage: {},
         };
       }
       
       acc[key].totalPoints += player.points;
-
-      if (!acc[key].roleDamage[player.role]) {
-        acc[key].roleDamage[player.role] = 0;
-      }
-      acc[key].roleDamage[player.role] += player.damage;
     });
     return acc;
   }, {});

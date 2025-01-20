@@ -84,8 +84,8 @@ export default function Event() {
 
     const roleData = {
       [selectedRole]: {
-        nick: nick,
-        ip: ip,
+        nick: nick.trim(),
+        ip: ip.trim(),
       }
     }
 
