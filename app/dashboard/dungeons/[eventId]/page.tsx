@@ -19,6 +19,8 @@ import { CheckCheck, Clipboard } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
 import PlayersWithMorInAnotherDg from "@/app/components/party/PlayersWithMorInAnotherDg";
+import { admins } from "@/lib/admins";
+import { useSession } from "next-auth/react";
 
 interface Role {
   value: string;
@@ -51,6 +53,8 @@ export default function Dungeons() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<string | null>(null);
   const [fetchPlayersWithMor, setfetchPlayersWithMor] = useState<PlayerData[]>([]);
+
+  const { data: session } = useSession();
 
   const { toast } = useToast()
 
@@ -369,7 +373,11 @@ export default function Dungeons() {
                       height={22}
                       className="rounded text-sm"
                     />
-                    {player.ip !== "0" && `IP: ${player.ip}`}
+                    {
+                      admins.includes(session?.user?.role as any) && session?.user?.role !== 'Ajudante ‍⚖️' && (
+                        player.ip !== "0" && `IP: ${player.ip}`
+                      )
+                    }
                   </div>
                 </div>
               ))}

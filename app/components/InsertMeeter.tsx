@@ -15,6 +15,8 @@ import {
 import { roles as DefaultRoles } from "@/lib/roles";
 import eloService from "@/utils/eloService";
 import { v4 as uuidv4 } from 'uuid';
+import { extractDPS } from "@/utils/extractDPS";
+import { extractHPS } from "@/utils/extractHPS";
 
 interface Player {
   nick: string;
@@ -92,66 +94,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     }
   );
 
-  const extractHPS = (inputText: string, nick: string): string => {
-    const normalizedInput = inputText.toLowerCase();
-    const normalizedNick = nick.toLowerCase();
-
-    const regex = new RegExp(`${normalizedNick}:\\s*(\\d+)\\(.*?\\|.*?HPS`, "i");
-    const match = normalizedInput.match(regex);
-
-    if (!match) {
-      console.warn(`HPS não encontrado para o jogador: ${nick}`);
-    }
-
-    return match ? match[1] : "0";
-  };
-
-  const extractDPS = (inputText: string, nick: string) => {
-    const normalizedInput = inputText.toLowerCase();
-    const normalizedNick = nick.toLowerCase();
-
-    // Extrai os jogadores removendo o número e ponto no início
-    const inputPlayers = normalizedInput
-      .split("\n")
-      .map((line) => line.replace(/^\d+\.\s*/, "").split(":")[0].trim()) // Remove número e ponto no início
-      .filter((nick) => nick);
-
-    const allNicks = roleNickPairs.map((pair) => pair.nick.toLowerCase());
-
-    const playersIntrusos = inputPlayers.filter(
-      (player) => !allNicks.includes(player)
-    );
-
-    setMissingPlayers(playersIntrusos as any);
-
-    const line = normalizedInput
-      .split("\n")
-      .find((line) => {
-        const startsWithNumber = /^\d+\.\s/.test(line);
-        return startsWithNumber && line.includes(`${normalizedNick}:`);
-      });
-
-    if (!line) {
-      console.warn(`DPS não encontrado para o jogador: ${normalizedNick}`);
-      return { total: "0", percentage: "0", perSecond: "0" };
-    }
-
-    const parts = line.split("|");
-    const totalAndPercentage = parts[0];
-    const perSecondWithDPS = parts[1];
-
-    const totalAndPercentParts = totalAndPercentage.split(/[:()]/).map((part) => part.trim());
-    const total = totalAndPercentParts[1];
-    const percentage = totalAndPercentParts[2];
-
-    return {
-      total: total.replace(/\./g, ""),
-      percentage: percentage.replace(",", "."),
-      perSecond: perSecondWithDPS.split(' ')[0],
-    };
-  };
-
-
   const calculateDpsScore = (
     dps: number,
     maxDps: number,
@@ -220,7 +162,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           points = 0;
         }
 
-        const dpsData = extractDPS(combinedText, nick);
+        const dpsData = extractDPS(combinedText, nick, setMissingPlayers, roleNickPairs);
 
         let heal = extractHPS(combinedText, nick);
         heal = isNaN(parseFloat(heal)) ? "0" : heal;
