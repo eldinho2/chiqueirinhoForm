@@ -115,8 +115,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     if (isTopDps) return 2;
     const percentage = (dps / maxDps) * 100;
 
-    if (percentage >= 75) return 1;
-    if (percentage < 65) return -1;
+    if (percentage >= 70) return 1;
+    if (percentage < 60) return -1;
     return 0;
   };
 
