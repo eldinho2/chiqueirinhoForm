@@ -80,6 +80,9 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
     return role?.icon;
   };
 
+  console.log(player);
+  
+
   return (
     <motion.div
       className={`relative rounded-lg ${getBackgroundGradient()} border-2 ${getBorderColor()} p-3 flex flex-col gap-4 overflow-hidden`}
@@ -142,15 +145,15 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
         <div className="bg-zinc-800/50 rounded-lg p-3 flex items-center gap-2">
           <Swords className="w-5 h-5 text-red-400" />
           <div>
-            <div className="text-xs text-zinc-400">Dano Total</div>
-            <div className="font-bold text-zinc-100">{parseInt(player.damage).toLocaleString()}</div>
+            <div className="text-xs text-zinc-400">Maior Dano</div>
+            <div className="font-bold text-zinc-100">{parseInt(player?.playerData?.highestStats?.highestDamage).toLocaleString()}</div>
           </div>
         </div>
         <div className="bg-zinc-800/50 rounded-lg p-3 flex items-center gap-2">
           <Zap className="w-5 h-5 text-yellow-400" />
           <div>
             <div className="text-xs text-zinc-400">Maior DPS</div>
-            <div className="font-bold text-zinc-100">{player.maxDps}</div>
+            <div className="font-bold text-zinc-100">{player?.playerData?.highestStats?.highestMaxDps}</div>
           </div>
         </div>
       </div>

@@ -98,6 +98,9 @@ export default function ProfileComponent() {
     </div>
   );
 
+  console.log(profile);
+  
+
   return (
     <div className="min-h-screen bg-[#1A1A1A] text-gray-200">
       <Header />

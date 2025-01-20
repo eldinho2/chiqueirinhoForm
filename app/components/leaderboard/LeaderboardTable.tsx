@@ -19,6 +19,9 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   onPageChange,
 }) => {
 
+  console.log(players);
+  
+
   return (
     <div className="mt-8">
       <div className="overflow-x-auto">
@@ -61,8 +64,8 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                     <span title={player.eloInfo.current.name}>{player.playerData?.highestStats?.roleWhithMorePoints?.role} {player.eloInfo?.current?.icon}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3">{parseInt(player.damage).toLocaleString()}</td>
-                <td className="px-4 py-3">{player.maxDps}</td>
+                <td className="px-4 py-3">{parseInt(player?.playerData?.highestStats?.highestDamage).toLocaleString()}</td>
+                <td className="px-4 py-3">{player?.playerData?.highestStats?.highestMaxDps}</td>
               </motion.tr>
             ))}
           </tbody>
