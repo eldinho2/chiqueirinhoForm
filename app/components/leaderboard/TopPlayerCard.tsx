@@ -78,10 +78,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
   const getRoleIcon = (roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon;
-  };
-
-  console.log(player);
-  
+  };  
 
   return (
     <motion.div

@@ -10,6 +10,7 @@ interface LeaderboardTableProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  role?: string
 }
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
@@ -17,10 +18,8 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   currentPage,
   totalPages,
   onPageChange,
-}) => {
-
-  console.log(players);
-  
+  role,
+}) => {    
 
   return (
     <div className="mt-8">
@@ -30,7 +29,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Jogador</th>
-              <th className="px-4 py-3">Pontos Totais</th>
+              {role ? <th className="px-4 py-3">Pontos na Role</th> : <th className="px-4 py-3">Pontos Totais</th>}
               <th className="px-4 py-3">Maior Elo</th>
               <th className="px-4 py-3">Maior Dano</th>
               <th className="px-4 py-3">Maior DPS</th>
@@ -58,7 +57,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   />
                   <Link className='text-sm' href={`/perfil/${player.playerData?.user?.nickname}`}>{player.nick}</Link>
                 </td>
-                <td className="px-4 py-3">{player.totalPoints.toLocaleString()}</td>
+                <td className="px-4 py-3">{role ? player.rolePoints.toLocaleString() : player.totalPoints.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span title={player.eloInfo.current.name}>{player.playerData?.highestStats?.roleWhithMorePoints?.role} {player.eloInfo?.current?.icon}</span>
