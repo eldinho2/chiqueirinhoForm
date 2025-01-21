@@ -103,7 +103,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     const percentage = (dps / maxDps) * 100;
 
     if (percentage >= 85) return 1;
-    if (percentage < 75) return -1;
+    if (percentage < 50) return -1;
     return 0;
   };
 
@@ -116,7 +116,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     const percentage = (dps / maxDps) * 100;
 
     if (percentage >= 70) return 1;
-    if (percentage < 60) return -1;
+    if (percentage < 50) return -1;
     return 0;
   };
 
@@ -604,8 +604,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                               player.points.toString()
                             }
                             onChange={(e) => {
-                              //const value = Math.max(Math.min(+e.target.value, 3), -2);
-                              handleScoreChange(player.nick, +e.target.value, index);
+                              const value = Math.max(Math.min(+e.target.value, 3), -2);
+                              handleScoreChange(player.nick, value, index);
                             }}
                             className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
                           />
