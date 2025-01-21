@@ -604,8 +604,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                               player.points.toString()
                             }
                             onChange={(e) => {
-                              const value = Math.max(Math.min(+e.target.value, 3), -2);
-                              handleScoreChange(player.nick, value, index);
+                              //const value = Math.max(Math.min(+e.target.value, 3), -2);
+                              handleScoreChange(player.nick, +e.target.value, index);
                             }}
                             className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
                           />

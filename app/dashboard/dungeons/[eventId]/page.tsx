@@ -21,6 +21,15 @@ import { useToast } from "@/hooks/use-toast"
 import PlayersWithMorInAnotherDg from "@/app/components/party/PlayersWithMorInAnotherDg";
 import { admins } from "@/lib/admins";
 import { useSession } from "next-auth/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 interface Role {
   value: string;
@@ -415,7 +424,24 @@ export default function Dungeons() {
           <span className="my-6 text-sm text-neutral-400">
             {dungeonsDetails[0]?.roles.length} pings
           </span>
-          <button onClick={handleClearDungeon} className="hover:underline hover:text-gray-500">Limpar Dungeon</button>
+          <Dialog>
+            <DialogTrigger asChild>
+            <button className="hover:underline hover:text-gray-500">Limpar Dungeon</button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#1A1A1A] flex flex-col justify-center items-center gap-4 w-[400px] h-[200px]">          
+              <DialogHeader className="">
+                <DialogTitle className="text-center">Limpar Dungeon</DialogTitle>
+                <DialogDescription>
+                  Tem certeza que deseja limpar a dungeon?
+                </DialogDescription>
+              </DialogHeader>
+                <DialogClose className="flex gap-4 py-5" asChild>
+                  <button className="hover:underline hover:text-red-500">Sair</button>
+                </DialogClose>
+              <button onClick={handleClearDungeon} className="hover:underline hover:text-green-500">Limpar Dungeon</button>
+            </DialogContent>
+          </Dialog>          
+
           <div>
             <InsertMeeter
               dungeon={dungeonsDetails}
