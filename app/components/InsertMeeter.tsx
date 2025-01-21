@@ -164,15 +164,15 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
 
         const dpsData = extractDPS(combinedText, nick, setMissingPlayers, roleNickPairs);
 
-        let heal = extractHPS(combinedText, nick);
-        heal = isNaN(parseFloat(heal)) ? "0" : heal;
+        //let heal = extractHPS(combinedText, nick);
+        //heal = isNaN(parseFloat(heal)) ? "0" : heal;
         return {
           nick,
           role,
           damage: dpsData.total,
           percentage: dpsData.percentage,
           perSecond: dpsData.perSecond,
-          heal,
+          //heal,
           points: dpsRoles.includes(role) ? points : points,
           maxPercentage: "0%",
           maxDps: "0",
@@ -382,7 +382,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       role: player.role,
       points: player.points,
       damage: player.damage,
-      heal: player.heal,
+      heal: '0',
       maxDps: player.maxDps,
       maxPercentage: player.maxPercentage,
     }));
