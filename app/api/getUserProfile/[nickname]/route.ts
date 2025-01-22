@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    const lastFiveDungeons = dungeonHistory.slice(0, 5);
+    const lastFiveDungeons = dungeonHistory.slice(0, 15);
 
     const highestStats = calculateHighestStats(participacoes);
 

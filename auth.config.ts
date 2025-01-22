@@ -4,6 +4,9 @@ export const authConfig = {
   pages: {
     signIn: '/login',
   },
+  session: {
+    maxAge: 172800,
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;

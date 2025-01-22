@@ -16,22 +16,17 @@ interface ProfileInterface {
 }
 
 async function fetchWithRetry(url: string, options?: RequestInit) {
-  const retries = 999;
-  for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
       if (response.ok) {
         return await response.json();
       }
-      console.error(`Erro na tentativa ${i + 1}:`, response.statusText);
+      console.error(`Erro na tentativa:`, response.statusText);
     } catch (error) {
-      console.error(`Erro na tentativa ${i + 1}:`, error);
-      if (i === retries - 1) {
-        throw new Error('O bot não está respondendo após várias tentativas.');
-      }
+      console.error(`Erro na tentativa`, error);
     }
-  }
 }
+
 
 async function findOrCreateUser(profile: ProfileInterface) {
   try {    
