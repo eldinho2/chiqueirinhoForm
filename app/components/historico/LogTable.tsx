@@ -71,7 +71,9 @@ export default function LogTable({ data }: any) {
     }
   };
 
-  const filteredData = data.filter((item: { dungeon: string; players: any[]; }) =>
+  const sortedData = data.sort((a: { createdAt: string | number | Date; }, b: { createdAt: string | number | Date; }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const filteredData = sortedData.filter((item: { dungeon: string; players: any[]; }) =>
     item.dungeon.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.players.some(player => player.nick.toLowerCase().includes(searchTerm.toLowerCase()))
   );
