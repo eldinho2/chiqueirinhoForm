@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
+import { roles } from '@/lib/roles'
 
 interface LeaderboardTableProps {
   players: any[]
@@ -27,11 +28,15 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     if (!playerRoles) return 0; 
   
     const result = playerRoles?.find((item: any) => item.role === role);
+    console.log(result);
     
-    return result?.elo.icon ?? '/chiqueirinhologo.webp';
+    return result?.elo.current.icon ?? '/chiqueirinhologo.webp';
   };
   
-  
+  const getRoleIcon = (roleName: string) => {
+    const role = roles.find((r) => r.value === roleName);
+    return role?.icon;
+  };   
   
 
   return (
