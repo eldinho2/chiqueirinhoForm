@@ -21,6 +21,19 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   role,
 }) => {    
 
+  const findEloFromRole = (player: any, role: string) => {
+    const playerRoles = player.playerData?.highestStats?.allPlayersRoles;
+  
+    if (!playerRoles) return 0; 
+  
+    const result = playerRoles?.find((item: any) => item.role === role);
+    
+    return result?.elo.icon ?? '/chiqueirinhologo.webp';
+  };
+  
+  
+  
+
   return (
     <div className="mt-8">
       <div className="overflow-x-auto">
@@ -30,7 +43,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Jogador</th>
               {role ? <th className="px-4 py-3">Pontos na Role</th> : <th className="px-4 py-3">Pontos Totais</th>}
-              <th className="px-4 py-3">Maior Elo</th>
+              <th className="px-4 py-3">{role ? 'Elo Atual' : 'Maior Elo'}</th>
               <th className="px-4 py-3">Maior Dano</th>
               <th className="px-4 py-3">Maior DPS</th>
             </tr>
@@ -60,7 +73,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 <td className="px-4 py-3">{role ? player?.rolePoints?.toLocaleString() : player?.totalPoints?.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span title={player.eloInfo.current.name}>{player.playerData?.highestStats?.roleWhithMorePoints?.role} {player.eloInfo?.current?.icon}</span>
+                    <span title={player.eloInfo.current.name}>{role ? role : player.playerData?.highestStats?.roleWhithMorePoints?.role} {role ? findEloFromRole(player, role) : player.eloInfo?.current?.icon}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">{parseInt(player?.playerData?.highestStats?.highestDamage).toLocaleString()}</td>

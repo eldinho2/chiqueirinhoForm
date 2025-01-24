@@ -81,7 +81,7 @@ const RoleLeaderboard = ({ players }: { players: any[] }) => {
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 {topPlayers.map((player: any, index: number) => (
-                  <TopPlayerCard key={player.nick} rank={index + 1} player={player} />
+                  <TopPlayerCard key={player.nick} rank={index + 1} player={player} role={selectedRole} />
                 ))}
               </div>
 

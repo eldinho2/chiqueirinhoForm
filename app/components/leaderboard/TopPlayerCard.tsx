@@ -7,56 +7,7 @@ import { motion } from 'framer-motion'
 import { roles } from '@/lib/roles'
 import Link from 'next/link'
 
-interface TopPlayerCardProps {
-  rank: number
-  player: {
-    nick: string
-    role: string
-    totalPoints: number
-    damage: string
-    maxDps: string
-    picture: string
-    playerData: {
-      highestStats: any
-      user: {
-        userID: string
-        nickname: string
-        image: string
-        highestStats: {
-          roleWhithMorePoints: {
-            points: number
-            role: string
-          }
-          mostFrequentRole: {
-            role: string
-          }
-        }
-      }
-    }
-    eloInfo: {
-      current: {
-        color: any
-        name: string
-        icon: string
-        threshold: number
-      }
-      next: {
-        name: string
-        icon: string
-        threshold: number
-      } | null
-      previous: {
-        name: string
-        icon: string
-      } | null
-      progress: number
-    }
-    roleIcon: string
-    highestRoleIcon: string
-  }
-}
-
-export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) => {
+export const TopPlayerCard: React.FC<any> = ({ rank, player, role }) => {
   const getBorderColor = () => {
     switch (rank) {
       case 1: return 'border-yellow-400'
@@ -78,7 +29,20 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
   const getRoleIcon = (roleName: string) => {
     const role = roles.find((r) => r.value === roleName);
     return role?.icon;
-  };  
+  };   
+  
+  
+  const findEloFromRole = (player: any, role: string) => {
+    const playerRoles = player.playerData?.highestStats?.allPlayersRoles;
+  
+    if (!playerRoles) return 0; 
+  
+    const result = playerRoles?.find((item: any) => item.role === role);
+    
+    return result;
+  };
+
+  const selectedRoleElo = findEloFromRole(player, role);  
 
   return (
     <motion.div
@@ -124,11 +88,11 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
               <div className="text-xs text-zinc-400">Elo Atual</div>
               <div className="text-lg font-bold text-zinc-100 flex items-center gap-1">
                 <span >{player?.eloInfo?.current?.name}</span>
-                <span className=''>{player.eloInfo?.current?.icon}</span>
+                <span className=''>{role ? selectedRoleElo?.elo?.current?.icon : player.eloInfo?.current?.icon}</span>
               </div>
             </div>
             <Image
-              src={player?.highestRoleIcon}
+              src={role ? getRoleIcon(role) || '/chiqueirinhologo.webp' : player?.highestRoleIcon}
               alt={player?.playerData?.highestStats?.roleWhithMorePoints?.role || 'Role'}
               width={32}
               height={32}
@@ -158,26 +122,32 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
       <div className="mt-4">
         <div className="flex justify-between items-center mb-2">
           <div className="text-xs text-zinc-400">Progresso do Elo</div>
-          <div className="text-xs text-zinc-400">{player.eloInfo.progress.toFixed(0)}%</div>
+          <div className="text-xs text-zinc-400">{role ? selectedRoleElo?.elo.progress.toFixed(0) : player.eloInfo.progress.toFixed(0)}%</div>
         </div>
         <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
           <motion.div
-            className={`h-full ${player.eloInfo?.current?.color}`}
+            className={`h-full ${role ? selectedRoleElo?.elo.current.color : player.eloInfo?.current?.color}`}
             initial={{ width: 0 }}
-            animate={{ width: `${Math.round(player.eloInfo?.progress || 0)}%` }}
+            animate={{ width: `${Math.round(role ? selectedRoleElo?.elo?.progress || 0 : player.eloInfo?.progress || 0)}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         </div>
-        <p className='text-center text-xs pt-2 text-zinc-400'>{player.playerData?.highestStats?.roleWhithMorePoints?.points} pontos</p>
+        <p className='text-center text-xs pt-2 text-zinc-400'>{role? selectedRoleElo.elo.current.icon : player.eloInfo.current.icon }{role ? selectedRoleElo.points : player.playerData?.highestStats?.roleWhithMorePoints?.points} pontos</p>
       </div>
 
       <div className="flex justify-between items-center mt-2 text-xs">
         <div className="flex items-center gap-1 text-zinc-400">
           <ChevronDown className="w-4 h-4" />
-          <span>{player.eloInfo.previous ? player.eloInfo.current.name : 'N/A'} {player.eloInfo.current?.icon} {player.eloInfo.current?.threshold ? player.eloInfo.current?.threshold : 'N/A'}</span>
+          <span>
+            {role ? selectedRoleElo.elo.previous?.icon : player.eloInfo.previous?.icon}
+            {role ? selectedRoleElo.elo.current?.threshold : player.eloInfo.current?.threshold}
+          </span>
         </div>
         <div className="flex items-center gap-1 text-zinc-400">
-          <span>{player.eloInfo.next ? player.eloInfo.next.name : 'Max'} {player.eloInfo.next?.icon} {player.eloInfo.next?.threshold ? player.eloInfo.next?.threshold : 'N/A'}</span>
+          <span>
+            {role ? selectedRoleElo.elo.next?.icon : player.eloInfo.next?.icon} 
+            {role ? selectedRoleElo.elo.next?.threshold : player.eloInfo.next?.threshold ? player.eloInfo.next?.threshold : 'MAX'}
+          </span>
           <ChevronUp className="w-4 h-4" />
         </div>
       </div>

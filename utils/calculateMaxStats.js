@@ -29,30 +29,23 @@ export function calculateHighestStats(participacoes) {
 
   let rolePoints = {};
 
-  participacoes.forEach((participacao) => {    
+  participacoes.forEach((participacao) => {
     totalParticipations++;
-
     totalPoints += participacao.points;
 
     const role = participacao.role;
     rolePoints[role] = (rolePoints[role] || 0) + participacao.points;
 
     const damage = parseInt(participacao.damage.replace(',', ''));
-    if (damage > highestDamage) {
-      highestDamage = damage;
-    }
+    if (damage > highestDamage) highestDamage = damage;
 
     const maxDps = parseFloat(participacao.maxDps.replace(',', '.'));
-    if (maxDps > highestMaxDps) {
-      highestMaxDps = maxDps;
-    }
+    if (maxDps > highestMaxDps) highestMaxDps = maxDps;
 
     const maxPercentage = parseFloat(participacao.maxPercentage.replace(',', '.'));
-    if (maxPercentage > highestMaxPercentage) {
-      highestMaxPercentage = maxPercentage;
-    }
+    if (maxPercentage > highestMaxPercentage) highestMaxPercentage = maxPercentage;
 
-    roleOccurrences[participacao.role] = (roleOccurrences[participacao.role] || 0) + 1;
+    roleOccurrences[role] = (roleOccurrences[role] || 0) + 1;
   });
 
   let mostFrequentRole = '';
@@ -64,16 +57,54 @@ export function calculateHighestStats(participacoes) {
     }
   }
 
-
   const getEloByPoints = (points) => {
-    const sortedElos = Object.values(elos).sort((a, b) => b.threshold - a.threshold);
+    const sortedElos = Object.values(elos).sort((a, b) => a.threshold - b.threshold);
   
-    const playerElo = sortedElos.find(elo => points >= elo.threshold);
+    let currentEloIndex = sortedElos.findIndex((elo) => points < elo.threshold) - 1;
   
-    return playerElo || elos.semElo;
+    if (currentEloIndex < 0) {
+      currentEloIndex = sortedElos.length - 1;
+    }
+  
+    const currentElo = sortedElos[currentEloIndex] || null;
+    const nextElo = sortedElos[currentEloIndex + 1] || null;
+  
+    const progress =
+      currentElo && nextElo
+        ? ((points - currentElo.threshold) / (nextElo.threshold - currentElo.threshold)) * 100
+        : 100;
+  
+    return {
+      previous: currentEloIndex > 0 ? sortedElos[currentEloIndex - 1] : null,
+      current: currentElo
+        ? {
+            name: currentElo.name,
+            icon: currentElo.icon,
+            threshold: currentElo.threshold,
+            color: currentElo.color,
+            textColor: currentElo.textColor
+          }
+        : {
+            name: "Sem Elo",
+            icon: "😇",
+            threshold: 0,
+            color: "bg-amber-500",
+            textColor: "text-amber-500"
+          },
+      next: nextElo
+        ? {
+            name: nextElo.name,
+            icon: nextElo.icon,
+            threshold: nextElo.threshold,
+            color: nextElo.color,
+            textColor: nextElo.textColor
+          }
+        : null,
+      progress: Math.min(progress, 100)
+    };
   };
-
-  const allPlayersRoles = Object.entries(rolePoints).map(([role, points, elo]) => ({
+  
+    const allPlayersRoles = Object.entries(rolePoints).map(([role, points]) => ({
     role,
     points,
     elo: getEloByPoints(points)

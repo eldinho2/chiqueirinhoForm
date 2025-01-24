@@ -27,6 +27,7 @@ const getEloInfo = (points: number) => {
       : 100
 
   return {
+    previous: currentEloIndex > 0 ? eloEntries[currentEloIndex - 1][1] : null,
     current: currentElo[1],
     next: nextElo,
     progress,
