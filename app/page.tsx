@@ -1,101 +1,43 @@
-'use client';
+"use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import localFont from 'next/font/local';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import Header from './components/Header';
-import Leaderboard from '@/app/components/leaderboard/Leaderboard';
-import RoleLeaderboard from '@/app/components/leaderboard/RoleLeaderboard';
-import HighestEloLeaderboard from '@/app/components/leaderboard/HighestEloLeaderboard';
-import Loading from '@/utils/Loading';
-import { processPlayerStats } from '@/utils/leaderboardUtils';
-import { ELOS } from '@/lib/elos';
-import { roles } from '@/lib/roles';
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import localFont from "next/font/local"
+import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
+import Header from "./components/Header"
+import Leaderboard from "@/app/components/leaderboard/Leaderboard"
+import RoleLeaderboard from "@/app/components/leaderboard/RoleLeaderboard"
+import HighestEloLeaderboard from "@/app/components/leaderboard/HighestEloLeaderboard"
+import Loading from "@/utils/Loading"
 
 const koch = localFont({
-  src: '../public/fonts/Koch Fraktur.ttf',
-  weight: '100',
-});
+  src: "../public/fonts/Koch Fraktur.ttf",
+  weight: "100",
+})
 
-const fetchAllTimeData = async () => {
-  const response = await fetch('/api/getAllTimeData');
+const fetchAllTimePlayersData = async () => {
+  const response = await fetch("/api/getAllTimePlayersData")
   if (!response.ok) {
-    throw new Error('Failed to fetch all-time data');
+    throw new Error("Failed to fetch all-time players data")
   }
-  return response.json();
-};
-
-const fetchPlayerDetails = async (player: any) => {
-  const { nick } = player;
-
-  const nickname = nick.toLowerCase();
-
-  const playerDataResponse = await fetch(`/api/getUserProfile/${nickname}`);
-  const playerData = await playerDataResponse.json();
-
-  return { ...player, playerData };
-};
+  return response.json()
+}
 
 export default function Home() {
-  const [activeLeaderboard, setActiveLeaderboard] = useState('total');
+  const [activeLeaderboard, setActiveLeaderboard] = useState("total")
 
-  const { data: weekData, isError } = useQuery({
-    queryKey: ['playersAllTimeData'],
-    queryFn: fetchAllTimeData,
-  });
+  const {
+    data: allTimePlayersData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["allTimePlayersData"],
+    queryFn: fetchAllTimePlayersData,
+    refetchInterval: 60000, // Refetch every minute to check for changes
+  })
 
-  const { data: playersDataWithDetails = [], isFetching, isLoading } = useQuery({
-    queryKey: ['playersDetails', weekData],
-    queryFn: async () => {
-      if (!weekData) return [];
-      const sortedPlayers = processPlayerStats(weekData);
-      return Promise.all(sortedPlayers.map(fetchPlayerDetails));
-    },
-    enabled: !!weekData,
-  });
-
-  const getEloInfo = useCallback((points: number) => {
-    const eloEntries = Object.entries(ELOS);
-
-    const currentEloIndex = eloEntries.findIndex(([, { threshold }], index) => {
-      const prevThreshold = index === 0 ? -Infinity : eloEntries[index - 1][1].threshold;
-      const nextThreshold = index + 1 < eloEntries.length ? eloEntries[index + 1][1].threshold : Infinity;
-      return points >= prevThreshold && points < nextThreshold;
-    });
-
-    const currentElo = currentEloIndex >= 0 ? eloEntries[currentEloIndex] : eloEntries[0];
-    const nextElo = currentEloIndex + 1 < eloEntries.length ? eloEntries[currentEloIndex + 1][1] : null;
-
-    const progress =
-      nextElo && currentElo[1]
-        ? Math.min(
-            ((points - currentElo[1].threshold) / (nextElo.threshold - currentElo[1].threshold)) * 100,
-            100
-          )
-        : 100;
-
-    return {
-      current: currentElo[1],
-      next: nextElo,
-      progress,
-    };
-  }, []);
-
-  const getRoleIcon = useCallback((roleName: string) => {
-    const role = roles.find((r) => r.value === roleName);
-    return role?.icon || '/chiqueirinhologo.webp';
-  }, []);
-
-  const enhancedPlayers = useMemo(() => {
-    return playersDataWithDetails.map((player: any) => ({
-      ...player,
-      eloInfo: getEloInfo(player.playerData?.highestStats?.roleWhithMorePoints?.points || 0),
-      roleIcon: getRoleIcon(player.playerData?.highestStats?.mostFrequentRole?.role || ''),
-      highestRoleIcon: getRoleIcon(player.playerData?.highestStats?.roleWhithMorePoints?.role || ''),
-    }));
-  }, [playersDataWithDetails, getEloInfo, getRoleIcon]);
+  const enhancedPlayers = allTimePlayersData?.data || []
 
   return (
     <div className="min-h-screen">
@@ -109,7 +51,7 @@ export default function Home() {
         >
           Chiqueirinho Avaloniano
         </motion.h1>
-        {isFetching ? (
+        {isLoading ? (
           <Loading />
         ) : (
           <>
@@ -120,28 +62,28 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <Button
-                onClick={() => setActiveLeaderboard('total')}
+                onClick={() => setActiveLeaderboard("total")}
                 variant="outline"
                 className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-                  activeLeaderboard === 'total' ? 'bg-zinc-400' : ''
+                  activeLeaderboard === "total" ? "bg-zinc-400" : ""
                 }`}
               >
                 Pontos Totais
               </Button>
               <Button
-                onClick={() => setActiveLeaderboard('role')}
+                onClick={() => setActiveLeaderboard("role")}
                 variant="outline"
                 className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-                  activeLeaderboard === 'role' ? 'bg-zinc-400' : ''
+                  activeLeaderboard === "role" ? "bg-zinc-400" : ""
                 }`}
               >
                 Pontos por Role
               </Button>
               <Button
-                onClick={() => setActiveLeaderboard('highestElos')}
+                onClick={() => setActiveLeaderboard("highestElos")}
                 variant="outline"
                 className={`text-sm border-zinc-700 text-white hover:bg-zinc-800 hover:border-purple-500/50 transition-all duration-300 ${
-                  activeLeaderboard === 'highestElos' ? 'bg-zinc-400' : ''
+                  activeLeaderboard === "highestElos" ? "bg-zinc-400" : ""
                 }`}
               >
                 Jogadores com maior Elo
@@ -153,13 +95,14 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.6 }}
               className="text-sm"
             >
-              {activeLeaderboard === 'total' && <Leaderboard players={enhancedPlayers} />}
-              {activeLeaderboard === 'role' && <RoleLeaderboard players={enhancedPlayers} />}
-              {activeLeaderboard === 'highestElos' && <HighestEloLeaderboard players={enhancedPlayers} />}
+              {activeLeaderboard === "total" && <Leaderboard players={enhancedPlayers} />}
+              {activeLeaderboard === "role" && <RoleLeaderboard players={enhancedPlayers} />}
+              {activeLeaderboard === "highestElos" && <HighestEloLeaderboard players={enhancedPlayers} />}
             </motion.div>
           </>
         )}
       </main>
     </div>
-  );
+  )
 }
+

@@ -117,7 +117,7 @@ export const TopPlayerCard: React.FC<TopPlayerCardProps> = ({ rank, player }) =>
         <div className='flex flex-col items-end gap-2'>
           <div className="text-right">
             <div className="text-xs text-zinc-400">Pontos Totais</div>
-            <div className="text-2xl font-bold text-zinc-100">{player.totalPoints.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-zinc-100">{player?.totalPoints?.toLocaleString()}</div>
           </div>
           <div className="text-right flex items-center gap-2">
             <div className='flex flex-col items-center justify-center'>

@@ -21,12 +21,21 @@ function isValidPlayer(player: any): player is Player {
   );
 }
 
+const cache = new Map()
+
 export async function GET(request: NextRequest) {
   try {
     const nickname = request.nextUrl.pathname.split('/').pop()?.toLowerCase() || '';
+    const hash = request.nextUrl.searchParams.get("hash")
 
     if (!nickname) {
       return NextResponse.json({ error: "nickname is required" }, { status: 400 });
+    }
+
+    const cacheKey = `${nickname}-${hash}`
+
+    if (cache.has(cacheKey)) {
+      return NextResponse.json(cache.get(cacheKey))
     }
 
     const user = await prisma.users.findUnique({
@@ -80,6 +89,9 @@ export async function GET(request: NextRequest) {
     const lastFiveDungeons = dungeonHistory.slice(0, 15);
 
     const highestStats = calculateHighestStats(participacoes);
+    const userData = { user, highestStats, lastFiveDungeons: dungeonHistory }
+
+    cache.set(cacheKey, userData)
 
     return NextResponse.json({ user, highestStats, lastFiveDungeons });
   } catch (error) {

@@ -57,7 +57,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   />
                   <Link className='text-sm' href={`/perfil/${player.playerData?.user?.nickname}`}>{player.nick}</Link>
                 </td>
-                <td className="px-4 py-3">{role ? player.rolePoints.toLocaleString() : player.totalPoints.toLocaleString()}</td>
+                <td className="px-4 py-3">{role ? player?.rolePoints?.toLocaleString() : player?.totalPoints?.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span title={player.eloInfo.current.name}>{player.playerData?.highestStats?.roleWhithMorePoints?.role} {player.eloInfo?.current?.icon}</span>
