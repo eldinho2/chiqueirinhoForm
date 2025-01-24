@@ -3,6 +3,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { useState } from "react"
 import Link from "next/link"
+import Header from "./Header"
 
 export default function FormFinished() {
   const [copied, setCopied] = useState(false)
@@ -14,16 +15,19 @@ export default function FormFinished() {
   }
 
   return (  
+    <>
+    <Header />
+
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen flex items-center justify-center flex-col p-6"
+      className="flex items-center justify-center flex-col p-6"
     >
       <motion.div 
         initial={{ scale: 0.5 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", bounce: 0.5 }}
-        className="text-center flex flex-col items-center gap-4 p-6 "
+        className="text-center flex flex-col items-center gap-4 pb-6 "
       >
         <motion.div
           whileHover={{ rotate: 360 }}
@@ -63,7 +67,7 @@ export default function FormFinished() {
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="p-6 mt-8 rounded-lg max-w-2xl w-full"
+        className="p-6 rounded-lg max-w-2xl w-full"
       >
         <motion.div 
           className="text-red-500 font-bold text-2xl text-center mb-2"
@@ -117,5 +121,6 @@ export default function FormFinished() {
         </div>
       </motion.div>
     </motion.div>
+    </>
   )
 }
