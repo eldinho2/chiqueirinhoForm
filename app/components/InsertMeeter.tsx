@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { roles as DefaultRoles } from "@/lib/roles";
 import eloService from "@/utils/eloService";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { extractDPS } from "@/utils/extractDPS";
 import { extractHPS } from "@/utils/extractHPS";
+import { log } from "console";
 
 interface Player {
   nick: string;
@@ -57,8 +58,6 @@ const dpsRoles = [
   "Frost",
   "Fire",
 ];
-
-
 
 export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   const [textDGs, setTextDGs] = useState<TextDG[]>([
@@ -144,7 +143,11 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       ? textDGs[dgIndex].general + "\n" + inputText
       : inputText + "\n" + textDGs[dgIndex].healers;
 
-    const present = roleNickPairs
+    const filteredRoleNickPairs = roleNickPairs.filter(
+      ({ nick, role }) => role !== "Role Troll"
+    );
+
+    const present = filteredRoleNickPairs
       .filter(
         ({ nick, role }) =>
           inputNicks.includes(nick.toLowerCase()) &&
@@ -162,17 +165,20 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           points = 0;
         }
 
-        const dpsData = extractDPS(combinedText, nick, setMissingPlayers, roleNickPairs);
+        const dpsData = extractDPS(
+          combinedText,
+          nick,
+          setMissingPlayers,
+          roleNickPairs
+        );
 
-        let heal = extractHPS(combinedText, nick);
-        heal = isNaN(parseFloat(heal)) ? "0" : heal;
         return {
           nick,
           role,
           damage: dpsData.total,
           percentage: dpsData.percentage,
           perSecond: dpsData.perSecond,
-          heal,
+          heal: '0',
           points: dpsRoles.includes(role) ? points : points,
           maxPercentage: "0%",
           maxDps: "0",
@@ -187,7 +193,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     );
     const raizRoles = present.filter((player) =>
       "Raiz Férrea".includes(player.role)
-    )
+    );
 
     const maxDps = Math.max(
       ...damageRoles.map((player) => parseFloat(player.damage) || 0)
@@ -207,7 +213,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       return { ...player, points: scoreOverride[player.nick] ?? score };
     });
 
-
     const raizRolesWhithScores = raizRoles.map((player) => {
       const isTopDps = player === topDpsPlayer;
       const score = calculateRaizScore(
@@ -218,10 +223,13 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       return { ...player, points: scoreOverride[player.nick] ?? score };
     });
 
+    const presentWithScores = [
+      ...damageRolesWithScores,
+      ...otherRoles,
+      ...raizRolesWhithScores,
+    ];
 
-    const presentWithScores = [...damageRolesWithScores, ...otherRoles, ...raizRolesWhithScores];
-
-    setPresentRoles((prev) => {
+    setPresentRoles((prev: any) => {
       const updated = [...prev];
       updated[dgIndex] = presentWithScores.sort(
         (a, b) => parseFloat(b.damage) - parseFloat(a.damage)
@@ -246,7 +254,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       return updated;
     });
 
-    setCombinedRolesDGs((prev) => {
+    setCombinedRolesDGs((prev: any) => {
       const updated = [...prev];
       updated[dgIndex] = [
         ...new Map(
@@ -275,8 +283,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       prev.map((dg, index) =>
         index === dgIndex
           ? dg.map((player) =>
-            player.nick === nick ? { ...player, points: score } : player
-          )
+              player.nick === nick ? { ...player, points: score } : player
+            )
           : dg
       )
     );
@@ -284,8 +292,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       prev.map((dg, index) =>
         index === dgIndex
           ? dg.map((player) =>
-            player.nick === nick ? { ...player, points: score } : player
-          )
+              player.nick === nick ? { ...player, points: score } : player
+            )
           : dg
       )
     );
@@ -350,8 +358,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
   };
 
   const handleClearDungeon = async () => {
-    const role = dungeon[0].roles
-    const eventId = dungeon[0].eventId
+    const role = dungeon[0].roles;
+    const eventId = dungeon[0].eventId;
 
     await fetch("/api/clearDungeon", {
       method: "POST",
@@ -360,19 +368,21 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       },
       body: JSON.stringify({ role, eventId }),
     });
-  }
+  };
 
   const handleSave = async () => {
-    setIsWarningOpen(true)
+    setIsWarningOpen(true);
 
     if (warningWasRead === false) return;
 
-    setIsWarningOpen(false)
+    setIsWarningOpen(false);
     setIsSaving(true);
     const totalPoints = calculateTotalPoints();
 
     if (totalPoints.some((player) => isNaN(parseFloat(player.damage)))) {
-      alert("Ocorreu um erro ao salvar o dungeon. Aparentemente alguns jogadores possuem dados inválidos, como zero dano.");
+      alert(
+        "Ocorreu um erro ao salvar o dungeon. Aparentemente alguns jogadores possuem dados inválidos, como zero dano."
+      );
       setIsSaving(false);
       return;
     }
@@ -382,7 +392,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       role: player.role,
       points: player.points,
       damage: player.damage,
-      heal: '0',
+      heal: "0",
       maxDps: player.maxDps,
       maxPercentage: player.maxPercentage,
     }));
@@ -392,9 +402,6 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
       eventId: uuidv4(),
       players: formatedData,
     };
-
-    //console.log(data);
-    
 
     await fetch("/api/insertDungeonHistory", {
       method: "POST",
@@ -421,11 +428,19 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <motion.button className={"px-6 py-3 font-semibold rounded-lg transition-all bg-purple-600 text-white hover:bg-purple-700 active:scale-95"} >
+          <motion.button
+            className={
+              "px-6 py-3 font-semibold rounded-lg transition-all bg-purple-600 text-white hover:bg-purple-700 active:scale-95"
+            }
+          >
             Abrir Inserção
           </motion.button>
         </DialogTrigger>
-        <DialogContent className={`bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[700px] overflow-y-auto ${missingPlayers.length > 0 ? "border border-red-700" : ""}`}>
+        <DialogContent
+          className={`bg-[#1A1A1A] p-6 rounded-lg w-[1200px] max-h-[700px] overflow-y-auto ${
+            missingPlayers.length > 0 ? "border border-red-700" : ""
+          }`}
+        >
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-purple-300 flex justify-center">
               Calcular Meeter
@@ -437,19 +452,21 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
           <div className="flex flex-col justify-center items-center">
             <div className="flex gap-2 justify-center mb-4">
               <button
-                className={`px-3 py-1 rounded-lg ${activeTab === 0
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
-                  }`}
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === 0
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
                 onClick={() => setActiveTab(0)}
               >
                 DG 1
               </button>
               <button
-                className={`px-3 py-1 rounded-lg ${activeTab === 1
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
-                  }`}
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === 1
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
                 onClick={() => setActiveTab(1)}
               >
                 DG 2
@@ -457,10 +474,11 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
               {textDGs.slice(2).map((_, index) => (
                 <div key={index + 2} className="flex items-center">
                   <button
-                    className={`px-3 py-1 rounded-lg ${activeTab === index + 2
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-700 text-gray-300"
-                      }`}
+                    className={`px-3 py-1 rounded-lg ${
+                      activeTab === index + 2
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-700 text-gray-300"
+                    }`}
                     onClick={() => setActiveTab(index + 2)}
                   >
                     DG {index + 3}
@@ -482,10 +500,11 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             </div>
             <div className="gap-2 flex justify-center mb-4">
               <button
-                className={`px-3 py-1 rounded-lg ${activeTab === textDGs.length
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-700 text-gray-300"
-                  }`}
+                className={`px-3 py-1 rounded-lg ${
+                  activeTab === textDGs.length
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
                 onClick={() => setActiveTab(textDGs.length)}
               >
                 Pontuações Totais
@@ -494,7 +513,8 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             {missingPlayers.length > 0 && (
               <div className="flex flex-col items-center">
                 <h3 className="text-lg font-semibold text-red-500 mb-2">
-                  Jogadores Faltando: (não preencherãm o forms ou estão com o nick errado!)
+                  Jogadores Faltando: (não preencherãm o forms ou estão com o
+                  nick errado!)
                 </h3>
                 <ul className="list-disc list-inside">
                   {missingPlayers.map((player: any, index) => (
@@ -503,13 +523,13 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                 </ul>
               </div>
             )}
-
           </div>
           {textDGs.map((textDG, index) => (
             <motion.div
               key={index}
-              className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${activeTab === index ? "block" : "hidden"
-                }`}
+              className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
+                activeTab === index ? "block" : "hidden"
+              }`}
               variants={fadeIn}
               initial="hidden"
               animate="visible"
@@ -595,7 +615,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                           {Number(player.heal).toLocaleString() || 0}
                         </td>
                         <td className="py-2 px-4 border-b border-gray-600 text-center">
-                        <input
+                          <input
                             type="number"
                             max={3}
                             min={-2}
@@ -604,7 +624,10 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                               player.points.toString()
                             }
                             onChange={(e) => {
-                              const value = Math.max(Math.min(+e.target.value, 3), -2);
+                              const value = Math.max(
+                                Math.min(+e.target.value, 3),
+                                -2
+                              );
                               handleScoreChange(player.nick, value, index);
                             }}
                             className="w-12 p-1 bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
@@ -618,8 +641,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             </motion.div>
           ))}
           <motion.div
-            className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${activeTab === textDGs.length ? "block" : "hidden"
-              }`}
+            className={`p-4 bg-[#2A2A2A] rounded-lg mb-4 ${
+              activeTab === textDGs.length ? "block" : "hidden"
+            }`}
             variants={fadeIn}
             initial="hidden"
             animate="visible"
@@ -635,18 +659,28 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             <table className="min-w-full bg-[#1A1A1A] text-gray-300 rounded-lg border border-gray-700">
               <thead>
                 <tr>
-                  <th className="py-2 px-4 border-b border-gray-600">Jogador</th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Jogador
+                  </th>
                   <th className="py-2 px-4 border-b border-gray-600">Role</th>
                   <th className="py-2 px-4 border-b border-gray-600">Pontos</th>
-                  <th className="py-2 px-4 border-b border-gray-600">Total de Dano</th>
-                  <th className="py-2 px-4 border-b border-gray-600">Cura Total</th>
-                  <th className="py-2 px-4 border-b border-gray-600">Maior DPS</th>
-                  <th className="py-2 px-4 border-b border-gray-600">Maior %</th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Total de Dano
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Cura Total
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Maior DPS
+                  </th>
+                  <th className="py-2 px-4 border-b border-gray-600">
+                    Maior %
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {calculateTotalPoints()
-                  .sort((a: any, b: any) => b.damage - a.damage as any)
+                  .sort((a: any, b: any) => (b.damage - a.damage) as any)
                   .map((player, index) => (
                     <tr key={index}>
                       <td className="py-2 px-4 border-b border-gray-600 text-center">
@@ -655,8 +689,9 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
                       <td className="py-2 px-4 border-b border-gray-600 flex items-center justify-center">
                         <Image
                           src={
-                            DefaultRoles.find((role) => role.value === player.role)?.icon ??
-                            "/path/to/default/icon.png"
+                            DefaultRoles.find(
+                              (role) => role.value === player.role
+                            )?.icon ?? "/path/to/default/icon.png"
                           }
                           alt={player.role}
                           width={25}
@@ -689,7 +724,7 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
               <button
                 className="p-2 rounded-lg bg-green-600 font-bold"
                 onClick={() => {
-                  handleSave()
+                  handleSave();
                 }}
                 disabled={isSaving}
               >
@@ -710,18 +745,10 @@ export function InsertMeeter({ dungeon, morList }: InsertMeeterProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p>
-              A dg será limpa após salvar.
-            </p>
-            <p>
-              Confira os players do meeter e os que participaram da dg.
-            </p>
-            <p>
-              Antes de salvar, verifique se todos os dados estão corretos.
-            </p>
-            <p>
-              A operação de salvar é irreversível.
-            </p>
+            <p>A dg será limpa após salvar.</p>
+            <p>Confira os players do meeter e os que participaram da dg.</p>
+            <p>Antes de salvar, verifique se todos os dados estão corretos.</p>
+            <p>A operação de salvar é irreversível.</p>
             <p>
               Certifique-se de ter certeza de que deseja realizar essa operação.
             </p>

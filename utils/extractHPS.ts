@@ -1,6 +1,21 @@
-export const extractHPS = (inputText: string, nick: string): string => {
+export const extractHPS = (inputText: string, nick: string, setMissingPlayers: any, roleNickPairs: any) => {
   const normalizedInput = inputText.toLowerCase();
   const normalizedNick = nick.toLowerCase();
+
+  const inputPlayers = normalizedInput
+    .split("\n")
+    .map((line) => 
+      line.replace(/^\d+\.\s*/, "")
+          .split(":")[0].trim()
+    )
+    .filter((nick) => nick);
+
+  const allNicks = roleNickPairs.map((pair: any) => pair.nick.toLowerCase());
+
+  const playersIntrusos = inputPlayers.filter(
+    (player) => !allNicks.includes(player)
+  );
+  setMissingPlayers(playersIntrusos as any);
 
   const line = normalizedInput
     .split("\n")
@@ -11,17 +26,21 @@ export const extractHPS = (inputText: string, nick: string): string => {
     });
 
   if (!line) {
-    console.warn(`HPS não encontrado para o jogador: ${nick}`);
-    return "0";
+    console.warn(`HPS não encontrado para o jogador: ${normalizedNick}`);
+    return { total: "0", percentage: "0", perSecond: "0" };
   }
 
   const parts = line.split("|");
   const totalAndPercentage = parts[0];
-  
-  const totalAndPercentParts = totalAndPercentage
-    .split(/[:()]/) 
-    .map((part) => part.trim()); 
+  const perSecondWithDPS = parts[1];
 
-  const hps = totalAndPercentParts[1]; 
-  return hps || "0";
+  const totalAndPercentParts = totalAndPercentage
+    .split(/[:()]/)
+    .map((part) => part.trim());
+  const total = totalAndPercentParts[1];
+
+
+  return {
+    total: total.replace(/\./g, ""),
+  };
 };

@@ -12,7 +12,10 @@ export async function POST(request: Request) {
           set: [
             { MainTank: role[0].MainTank }
           ]
-        }
+        },
+        morList: {
+          set: []
+        },
       },
     });
 
