@@ -44,10 +44,6 @@ async function findOrCreateUser(profile: ProfileInterface) {
       throw new Error('Perfil incompleto: ID, username ou email está faltando.');
     }
 
-    let user = await prisma.users.findUnique({
-      where: { nickname },
-    });
-
     let role: string | null = null;
 
     const userRoles = data.roles;
@@ -59,7 +55,16 @@ async function findOrCreateUser(profile: ProfileInterface) {
       }
     }
 
-    if (!user) {
+    const existedUser = await prisma.users.findUnique({
+      where: { nickname },
+    });
+
+
+    console.log('user ==========================', existedUser);
+
+    
+    let user
+    if (!existedUser) {
       user = await prisma.users.create({
         data: {
           userID: profile.id,
@@ -76,7 +81,6 @@ async function findOrCreateUser(profile: ProfileInterface) {
       user = await prisma.users.update({
         where: { nickname },
         data: {
-          userID: profile.id,
           username: profile.username,
           email: profile.email,
           nickname: nickname.toLowerCase(),

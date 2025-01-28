@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.users.update({
       where: {
-        userID: user.userID,
+        nickname: user.nickname,
       },
       data: {
         oincPoints: newPoints,
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     const updatedUser = await prisma.users.findUnique({
       where: {
-        userID: user.userID,
+        nickname: user.nickname,
       },
       select: {
         id: false,
