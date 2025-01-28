@@ -81,6 +81,7 @@ async function findOrCreateUser(profile: ProfileInterface) {
       user = await prisma.users.update({
         where: { nickname },
         data: {
+          userID: profile.id,
           username: profile.username,
           email: profile.email,
           nickname: nickname.toLowerCase(),
