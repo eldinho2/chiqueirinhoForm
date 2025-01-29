@@ -34,7 +34,6 @@ export default function Home() {
   } = useQuery({
     queryKey: ["allTimePlayersData"],
     queryFn: fetchAllTimePlayersData,
-    refetchInterval: 60000, // Refetch every minute to check for changes
   })
 
   const enhancedPlayers = allTimePlayersData?.data || []
