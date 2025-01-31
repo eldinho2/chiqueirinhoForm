@@ -3,6 +3,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Inter } from "next/font/google";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,7 +74,7 @@ export default function RootLayout({
     <SessionProvider>
       <ReactQueryProvider>
         <html lang="pt-br" className={`${inter.className}`}>
-          <body>{children}</body>
+          <body>{children}<SpeedInsights /></body>
         </html>
       </ReactQueryProvider>
     </SessionProvider>
