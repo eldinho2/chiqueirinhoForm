@@ -5,7 +5,7 @@ export const authConfig = {
     signIn: '/login',
   },
   session: {
-    maxAge: 432000,
+    maxAge: 345600,
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
