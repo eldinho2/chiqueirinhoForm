@@ -61,8 +61,9 @@ async function findOrCreateUser(profile: ProfileInterface) {
 
 
     console.log('user ==========================', existedUser);
+
     
-    let user;
+    let user
     if (!existedUser) {
       user = await prisma.users.create({
         data: {
@@ -77,25 +78,20 @@ async function findOrCreateUser(profile: ProfileInterface) {
         },
       });
     } else {
-      const updateData: any = {
-        userID: profile.id,
-        username: profile.username,
-        email: profile.email,
-        nickname: nickname.toLowerCase(),
-        image: profile.image_url,
-        role: role || 'user',
-      };
-    
-      if (profile.banner !== null) {
-        updateData.banner = profile.banner;
-      }
-    
       user = await prisma.users.update({
         where: { nickname },
-        data: updateData,
+        data: {
+          userID: profile.id,
+          username: profile.username,
+          email: profile.email,
+          nickname: nickname.toLowerCase(),
+          image: profile.image_url,
+          banner: profile.banner,
+          role: role || 'user',
+        },
       });
     }
-    
+
     return user;
   } catch (error) {
     console.error('Erro ao encontrar ou criar o usuário:', error);

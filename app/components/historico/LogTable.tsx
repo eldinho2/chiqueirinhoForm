@@ -99,7 +99,7 @@ export default function LogTable({ data }: any) {
             <TableRow>
               <TableHead className="w-[30px]"></TableHead>
               <TableHead className="font-bold">Dungeon</TableHead>
-              <TableHead className="font-bold">Date</TableHead>
+              <TableHead className="font-bold">Data de Inserção</TableHead>
               <TableHead className="font-bold text-right">Players</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -126,7 +126,7 @@ export default function LogTable({ data }: any) {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{item.dungeon}</TableCell>
-                    <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(item.createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo'  })}</TableCell>
                     <TableCell className="text-right">
                       <Badge variant="outline">{item.players.length}</Badge>
                     </TableCell>
