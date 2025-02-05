@@ -38,6 +38,9 @@ export default function Home() {
 
   const enhancedPlayers = allTimePlayersData?.data || []
 
+  console.log("enhancedPlayers", enhancedPlayers);
+  
+
   return (
     <div className="min-h-screen">
       <Header />
