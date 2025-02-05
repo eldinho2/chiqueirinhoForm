@@ -165,10 +165,10 @@ export default function PlayerFormOptions({ player, role, dungeonsDetails, event
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-full bg-black flex flex-col gap-2">
           <div className="hover:bg-[#2A2A2A]">
-            <DropdownMenuItem className="cursor-pointer" onClick={() => handleAddToMorList(playerData)} ><Plus /> Adicionar M.O.R</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => handleAddToMorList(playerData)} ><Plus /> Adicionar a lista de M.O.R</DropdownMenuItem>
           </div>
           <div className="hover:bg-[#2A2A2A]">
-            <DropdownMenuItem className="cursor-pointer" onClick={() => setRemoveMor((prev: any) => [...prev, playerData])} ><X /> Remover M.O.R</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setRemoveMor((prev: any) => [...prev, playerData])} ><X /> Remover da lista de M.O.R</DropdownMenuItem>
           </div>
           <div className="hover:bg-[#2A2A2A]">
             <DropdownMenuItem className="cursor-pointer" onClick={openEditDialog}><Pencil /> Editar Player</DropdownMenuItem>
