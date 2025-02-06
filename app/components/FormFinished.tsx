@@ -101,7 +101,7 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Desktop:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="/formfinished1.png" 
+                src="/formfinished2.png" 
                 alt="Desktop" 
                 width={340} 
                 height={340} 
@@ -111,7 +111,7 @@ export default function FormFinished() {
               <h2 className="text-lg font-semibold text-zinc-300 mb-2">Mobile:</h2>
               <Image 
                 className="rounded-lg shadow-lg hover:scale-105 transition-transform"
-                src="/formfinished2.png" 
+                src="/formfinished1.png" 
                 alt="Mobile" 
                 width={340} 
                 height={340} 
