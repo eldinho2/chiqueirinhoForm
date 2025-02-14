@@ -3,8 +3,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Inter } from "next/font/google";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/react"
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({
   subsets: ["latin"],
@@ -75,7 +74,8 @@ export default function RootLayout({
     <SessionProvider>
       <ReactQueryProvider>
         <html lang="pt-br" className={`${inter.className}`}>
-          <body>{children}<SpeedInsights /> <Analytics /></body>
+          <body>{children}</body>
+          <GoogleAnalytics gaId="G-K5CT1L62HT" />
         </html>
       </ReactQueryProvider>
     </SessionProvider>

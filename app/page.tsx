@@ -38,6 +38,36 @@ export default function Home() {
 
   const enhancedPlayers = allTimePlayersData?.data || []
 
+  // const handleGetHistory = async () => {
+  //   try {
+  //     const response = await fetch("/api/getLastWeekDungeons");
+  //     if (!response.ok) {
+  //       throw new Error("Failed to fetch all-time players data");
+  //     }
+  //     const data = await response.json();
+  
+  //     const playerParticipation = {};
+  
+  //     data.forEach((dungeon) => {
+  //       dungeon.players.forEach((player) => {
+  //         if (!playerParticipation[player.nick]) {
+  //           playerParticipation[player.nick] = {
+  //             name: player.nick,
+  //             participateDungeons: 0,
+  //           };
+  //         }
+  //         playerParticipation[player.nick].participateDungeons += 1;
+  //       });
+  //     });
+      
+  //     const result = Object.values(playerParticipation);
+  //     const filteredResult = result.sort((a, b) => b.participateDungeons - a.participateDungeons).filter((player) => player.participateDungeons > 1);
+  //     console.log(filteredResult);
+  //   } catch (error) {
+  //     console.error("Error fetching player history:", error);
+  //   }
+  // };
+  
   return (
     <div className="min-h-screen">
       <Header />
