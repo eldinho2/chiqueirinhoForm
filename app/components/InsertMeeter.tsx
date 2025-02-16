@@ -52,7 +52,7 @@ interface InsertMeeterProps {
 
 const dpsRoles = [
   "X-Bow",
-  "Raiz Férrea DPS",
+  "Raiz Férrea - DPS",
   "Raiz Férrea",
   "Águia",
   "Frost",
